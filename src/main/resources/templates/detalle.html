@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${inmueble.titulo} + ' &mdash; arriendaya'"></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: header}"></div>
+
+<section class="seccion">
+    <div class="contenedor">
+
+        <div class="error-mensaje" th:if="${error}" th:text="${error}"></div>
+
+        <div class="detalle-layout">
+            <div>
+                <img class="detalle-imagen" th:src="${inmueble.imagenUrl}" th:alt="${inmueble.titulo}">
+                <h1 th:text="${inmueble.titulo}" style="margin: 18px 0 4px;"></h1>
+                <div style="color: var(--gris-suave); margin-bottom: 14px;"
+                     th:text="${inmueble.ubicacion.ciudad + ', ' + inmueble.ubicacion.pais + ' - ' + inmueble.direccion}"></div>
+                <p th:text="${inmueble.descripcion}"></p>
+                <ul style="color: var(--gris-suave); font-size: 14px;">
+                    <li th:text="'Tipo: ' + ${inmueble.tipo}"></li>
+                    <li th:text="'Capacidad: ' + ${inmueble.capacidad} + ' huespedes'"></li>
+                </ul>
+            </div>
+
+            <div class="ficha-reserva">
+                <div class="precio-grande">
+                    <span th:text="'$' + ${#numbers.formatInteger(inmueble.precioNoche, 0, 'POINT')}"></span>
+                    <small style="font-size: 13px; font-weight: 400;"> COP / noche</small>
+                </div>
+
+                <form th:action="@{/inmuebles/{id}/reservar(id=${inmueble.id})}" method="post">
+                    <div>
+                        <label>Llegada</label>
+                        <input type="date" name="llegada" required>
+                    </div>
+                    <div>
+                        <label>Salida</label>
+                        <input type="date" name="salida" required>
+                    </div>
+                    <button class="boton-reservar" type="submit">Reservar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

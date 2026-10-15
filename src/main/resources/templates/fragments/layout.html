@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<header class="sitio" th:fragment="header">
+    <div class="contenedor">
+        <a href="/" class="logo">arrienda<span>ya</span></a>
+        <nav class="sitio">
+            <a href="/">Buscar</a>
+            <th:block th:if="${session.usuarioId == null}">
+                <a href="/login">Iniciar sesion</a>
+                <a href="/registro" class="boton-primario">Registrarse</a>
+            </th:block>
+            <th:block th:if="${session.usuarioId != null}">
+                <span th:text="'Hola, ' + ${session.usuarioNombre}" style="margin-left: 18px; font-size: 14px;"></span>
+                <a href="/logout">Salir</a>
+            </th:block>
+        </nav>
+    </div>
+</header>
+
+<footer class="sitio" th:fragment="footer">
+    <div class="contenedor">
+        &copy; 2026 arriendaya &mdash; Proyecto academico, Maestria en Informatica, Universidad Distrital.
+    </div>
+</footer>
+
+</body>
+</html>

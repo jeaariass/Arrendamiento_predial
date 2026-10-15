@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Crear cuenta &mdash; arriendaya</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: header}"></div>
+
+<div class="panel-formulario">
+    <h1>Crear cuenta</h1>
+
+    <div class="error-mensaje" th:if="${error}" th:text="${error}"></div>
+
+    <form action="/registro" method="post">
+        <div class="campo-form">
+            <label>Nombre</label>
+            <input type="text" name="nombre" required>
+        </div>
+        <div class="campo-form">
+            <label>Apellido</label>
+            <input type="text" name="apellido" required>
+        </div>
+        <div class="campo-form">
+            <label>Correo electronico</label>
+            <input type="email" name="email" required>
+        </div>
+        <div class="campo-form">
+            <label>Telefono</label>
+            <input type="text" name="telefono">
+        </div>
+        <div class="campo-form">
+            <label>Contrasena</label>
+            <input type="password" name="password" required minlength="6">
+        </div>
+
+        <div class="checkboxes">
+            <label><input type="checkbox" name="serCliente" value="true" checked> Quiero reservar alojamientos</label>
+            <label><input type="checkbox" name="serPropietario" value="true"> Quiero publicar un inmueble</label>
+        </div>
+
+        <button type="submit">Registrarme</button>
+    </form>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

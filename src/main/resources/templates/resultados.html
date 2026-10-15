@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultados de busqueda &mdash; arriendaya</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: header}"></div>
+
+<section class="hero" style="padding: 26px 0;">
+    <div class="contenedor">
+        <form class="buscador" action="/buscar" method="get">
+            <div class="campo">
+                <label>Destino</label>
+                <input type="text" name="ciudad" th:value="${ciudad}" placeholder="Ej: Cartagena">
+            </div>
+            <div class="campo">
+                <label>Llegada</label>
+                <input type="date" name="llegada" th:value="${llegada}">
+            </div>
+            <div class="campo">
+                <label>Salida</label>
+                <input type="date" name="salida" th:value="${salida}">
+            </div>
+            <div class="campo">
+                <label>Huespedes</label>
+                <input type="number" name="huespedes" min="1" th:value="${huespedes}">
+            </div>
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+</section>
+
+<section class="seccion">
+    <div class="contenedor">
+        <h2 th:text="${#lists.size(resultados)} + ' alojamientos encontrados'"
+            th:if="${not #lists.isEmpty(resultados)}"></h2>
+
+        <div class="grid-propiedades" th:if="${not #lists.isEmpty(resultados)}">
+            <a class="tarjeta" th:each="i : ${resultados}" th:href="@{/inmuebles/{id}(id=${i.id})}">
+                <img th:src="${i.imagenUrl}" th:alt="${i.titulo}">
+                <div class="cuerpo">
+                    <span class="tipo" th:text="${i.tipo}"></span>
+                    <h3 th:text="${i.titulo}"></h3>
+                    <div class="ubicacion" th:text="${i.ubicacion.ciudad + ', ' + i.ubicacion.pais}"></div>
+                    <div class="precio">
+                        <span th:text="'$' + ${#numbers.formatInteger(i.precioNoche, 0, 'POINT')}"></span>
+                        <small>COP / noche</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="vacio" th:if="${#lists.isEmpty(resultados)}">
+            No encontramos alojamientos disponibles con esos filtros. Intenta con otras fechas o ciudad.
+        </div>
+    </div>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

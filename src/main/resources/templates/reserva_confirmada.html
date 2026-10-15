@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Reserva confirmada &mdash; arriendaya</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: header}"></div>
+
+<section class="seccion">
+    <div class="contenedor" style="max-width: 600px;">
+        <div class="exito-mensaje">
+            <h2 style="margin-top: 0;">Reserva creada</h2>
+            <p>Tu reserva quedo registrada con estado
+                <strong th:text="${reserva.estado}"></strong>.</p>
+            <p>Fechas: <strong th:text="${reserva.fechaInicio}"></strong> a
+                <strong th:text="${reserva.fechaFin}"></strong></p>
+            <p>Valor total: <strong th:text="'$' + ${#numbers.formatInteger(reserva.valorTotal, 0, 'POINT')} + ' COP'"></strong></p>
+        </div>
+        <p style="margin-top: 20px;"><a href="/">&larr; Volver al inicio</a></p>
+    </div>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

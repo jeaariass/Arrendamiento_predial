@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>arriendaya &mdash; Arrienda por dias donde quieras</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: header}"></div>
+
+<section class="hero">
+    <div class="contenedor">
+        <h1>Encuentra tu proximo alojamiento</h1>
+        <p class="subtitulo">Apartamentos, casas y cabanas para arrendar por dias en toda Colombia.</p>
+
+        <form class="buscador" action="/buscar" method="get">
+            <div class="campo">
+                <label>Destino</label>
+                <input type="text" name="ciudad" placeholder="Ej: Cartagena">
+            </div>
+            <div class="campo">
+                <label>Llegada</label>
+                <input type="date" name="llegada">
+            </div>
+            <div class="campo">
+                <label>Salida</label>
+                <input type="date" name="salida">
+            </div>
+            <div class="campo">
+                <label>Huespedes</label>
+                <input type="number" name="huespedes" min="1" placeholder="2">
+            </div>
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+</section>
+
+<section class="seccion">
+    <div class="contenedor">
+        <h2>Alojamientos destacados</h2>
+        <p class="ayuda">Algunas opciones disponibles ahora mismo</p>
+
+        <div class="grid-propiedades" th:if="${not #lists.isEmpty(destacados)}">
+            <a class="tarjeta" th:each="i : ${destacados}" th:href="@{/inmuebles/{id}(id=${i.id})}">
+                <img th:src="${i.imagenUrl}" th:alt="${i.titulo}">
+                <div class="cuerpo">
+                    <span class="tipo" th:text="${i.tipo}"></span>
+                    <h3 th:text="${i.titulo}"></h3>
+                    <div class="ubicacion" th:text="${i.ubicacion.ciudad + ', ' + i.ubicacion.pais}"></div>
+                    <div class="precio">
+                        <span th:text="'$' + ${#numbers.formatInteger(i.precioNoche, 0, 'POINT')}"></span>
+                        <small>COP / noche</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="vacio" th:if="${#lists.isEmpty(destacados)}">
+            Aun no hay alojamientos publicados.
+        </div>
+    </div>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>
