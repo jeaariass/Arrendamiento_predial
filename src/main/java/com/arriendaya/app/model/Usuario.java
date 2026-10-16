@@ -1,4 +1,4 @@
-package com.ctglobal.arriendo.model;
+package com.arriendaya.app.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -40,4 +40,12 @@ public class Usuario {
 
     @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro = LocalDateTime.now();
+
+    /**
+     * Bandera de acceso al panel de administracion. No es un objeto del
+     * modelo conceptual (no hay entidad "Administrador"): es un dato propio
+     * de Usuario, igual que password_hash.
+     */
+    @Column(name = "es_admin", nullable = false)
+    private boolean esAdmin = false;
 }

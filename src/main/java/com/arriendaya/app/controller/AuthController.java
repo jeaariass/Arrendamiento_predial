@@ -1,7 +1,7 @@
-package com.ctglobal.arriendo.controller;
+package com.arriendaya.app.controller;
 
-import com.ctglobal.arriendo.model.Usuario;
-import com.ctglobal.arriendo.service.UsuarioService;
+import com.arriendaya.app.model.Usuario;
+import com.arriendaya.app.service.UsuarioService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -62,6 +62,7 @@ public class AuthController {
         Usuario usuario = usuarioOpt.get();
         session.setAttribute("usuarioId", usuario.getId());
         session.setAttribute("usuarioNombre", usuario.getNombre());
+        session.setAttribute("esAdmin", usuario.isEsAdmin());
         return "redirect:/";
     }
 

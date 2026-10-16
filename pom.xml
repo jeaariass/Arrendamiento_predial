@@ -11,7 +11,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.ctglobal</groupId>
+    <groupId>com.arriendaya</groupId>
     <artifactId>arriendo-inmuebles</artifactId>
     <version>0.1.0</version>
     <name>arriendo-inmuebles</name>
@@ -42,6 +42,14 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>

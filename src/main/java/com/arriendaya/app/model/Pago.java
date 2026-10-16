@@ -1,4 +1,4 @@
-package com.ctglobal.arriendo.model;
+package com.arriendaya.app.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;

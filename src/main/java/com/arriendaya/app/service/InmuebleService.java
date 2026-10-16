@@ -1,7 +1,9 @@
-package com.ctglobal.arriendo.service;
+package com.arriendaya.app.service;
 
-import com.ctglobal.arriendo.model.Inmueble;
-import com.ctglobal.arriendo.repository.InmuebleRepository;
+import com.arriendaya.app.dto.PuntoMapa;
+import com.arriendaya.app.model.Inmueble;
+import com.arriendaya.app.repository.InmuebleRepository;
+import com.arriendaya.app.repository.UbicacionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,14 +14,23 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InmuebleService {
 
+    private static final int MAX_CIUDADES_TOP = 5;
+    private static final int MAX_SUGERENCIAS = 8;
+    private static final int MAX_PUNTOS_MAPA = 1000;
+
     private final InmuebleRepository inmuebleRepository;
+    private final UbicacionRepository ubicacionRepository;
 
     public List<Inmueble> buscar(String ciudad, Integer capacidad, LocalDate fechaInicio, LocalDate fechaFin) {
         return inmuebleRepository.buscar(
-                (ciudad == null || ciudad.isBlank()) ? null : ciudad.trim(),
+                normalizarCiudad(ciudad),
                 capacidad,
                 fechaInicio,
                 fechaFin);
+    }
+
+    private String normalizarCiudad(String ciudad) {
+        return (ciudad == null || ciudad.isBlank()) ? "" : ciudad.trim();
     }
 
     public List<Inmueble> destacados() {
@@ -37,5 +48,30 @@ public class InmuebleService {
 
     public Inmueble guardar(Inmueble inmueble) {
         return inmuebleRepository.save(inmueble);
+    }
+
+    public List<String> ciudadesTop() {
+        return inmuebleRepository.ciudadesPorCantidadDesc().stream()
+                .limit(MAX_CIUDADES_TOP)
+                .toList();
+    }
+
+    public List<String> sugerirCiudades(String q) {
+        String query = (q == null) ? "" : q.trim();
+        return ubicacionRepository.buscarCiudades(query).stream()
+                .limit(MAX_SUGERENCIAS)
+                .toList();
+    }
+
+    public List<PuntoMapa> puntosEnMapa(double minLat, double maxLat, double minLon, double maxLon,
+                                         String ciudad, LocalDate fechaInicio, LocalDate fechaFin) {
+        List<Inmueble> inmuebles = inmuebleRepository.buscarEnMapa(
+                minLat, maxLat, minLon, maxLon,
+                normalizarCiudad(ciudad),
+                fechaInicio, fechaFin);
+        return inmuebles.stream()
+                .limit(MAX_PUNTOS_MAPA)
+                .map(i -> new PuntoMapa(i.getId(), i.getTitulo(), i.getPrecioNoche(), i.getLatitud(), i.getLongitud(), i.getImagenUrl()))
+                .toList();
     }
 }

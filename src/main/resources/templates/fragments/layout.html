@@ -12,6 +12,7 @@
                 <a href="/registro" class="boton-primario">Registrarse</a>
             </th:block>
             <th:block th:if="${session.usuarioId != null}">
+                <a th:if="${session.esAdmin == true}" href="/admin">Panel admin</a>
                 <span th:text="'Hola, ' + ${session.usuarioNombre}" style="margin-left: 18px; font-size: 14px;"></span>
                 <a href="/logout">Salir</a>
             </th:block>

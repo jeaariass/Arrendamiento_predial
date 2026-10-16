@@ -1,6 +1,6 @@
-package com.ctglobal.arriendo.repository;
+package com.arriendaya.app.repository;
 
-import com.ctglobal.arriendo.model.Banco;
+import com.arriendaya.app.model.Banco;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BancoRepository extends JpaRepository<Banco, Long> {

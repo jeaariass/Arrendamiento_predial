@@ -1,11 +1,11 @@
-package com.ctglobal.arriendo.service;
+package com.arriendaya.app.service;
 
-import com.ctglobal.arriendo.model.Cliente;
-import com.ctglobal.arriendo.model.Propietario;
-import com.ctglobal.arriendo.model.Usuario;
-import com.ctglobal.arriendo.repository.ClienteRepository;
-import com.ctglobal.arriendo.repository.PropietarioRepository;
-import com.ctglobal.arriendo.repository.UsuarioRepository;
+import com.arriendaya.app.model.Cliente;
+import com.arriendaya.app.model.Propietario;
+import com.arriendaya.app.model.Usuario;
+import com.arriendaya.app.repository.ClienteRepository;
+import com.arriendaya.app.repository.PropietarioRepository;
+import com.arriendaya.app.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

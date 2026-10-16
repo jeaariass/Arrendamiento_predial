@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${propietario.usuario.nombre} + ' ' + ${propietario.usuario.apellido} + ' &mdash; arriendaya'"></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: header}"></div>
+
+<section class="seccion">
+    <div class="contenedor">
+
+        <div class="perfil-propietario">
+            <div class="avatar" th:text="${#strings.substring(propietario.usuario.nombre, 0, 1)}"></div>
+            <div>
+                <h1 th:text="${propietario.usuario.nombre} + ' ' + ${propietario.usuario.apellido}"></h1>
+                <div class="meta" th:text="'Propietario en arriendaya'"></div>
+            </div>
+        </div>
+
+        <h2 th:text="${#lists.size(inmuebles)} + ' alojamientos publicados'"></h2>
+
+        <div class="grid-propiedades" th:if="${not #lists.isEmpty(inmuebles)}">
+            <a class="tarjeta" th:each="i : ${inmuebles}" th:href="@{/inmuebles/{id}(id=${i.id})}">
+                <img th:src="${i.imagenUrl}" th:alt="${i.titulo}">
+                <div class="cuerpo">
+                    <span class="tipo" th:text="${i.tipo}"></span>
+                    <h3 th:text="${i.titulo}"></h3>
+                    <div class="ubicacion" th:text="${i.ubicacion.ciudad + ', ' + i.ubicacion.pais}"></div>
+                    <div class="precio">
+                        <span th:text="'$' + ${#numbers.formatInteger(i.precioNoche, 0, 'POINT')}"></span>
+                        <small>COP / noche</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="vacio" th:if="${#lists.isEmpty(inmuebles)}">
+            Este propietario aun no tiene alojamientos publicados.
+        </div>
+    </div>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

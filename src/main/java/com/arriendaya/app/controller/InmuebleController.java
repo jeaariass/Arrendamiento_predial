@@ -1,9 +1,9 @@
-package com.ctglobal.arriendo.controller;
+package com.arriendaya.app.controller;
 
-import com.ctglobal.arriendo.model.Cliente;
-import com.ctglobal.arriendo.service.InmuebleService;
-import com.ctglobal.arriendo.service.ReservaService;
-import com.ctglobal.arriendo.service.UsuarioService;
+import com.arriendaya.app.model.Cliente;
+import com.arriendaya.app.service.InmuebleService;
+import com.arriendaya.app.service.ReservaService;
+import com.arriendaya.app.service.UsuarioService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;

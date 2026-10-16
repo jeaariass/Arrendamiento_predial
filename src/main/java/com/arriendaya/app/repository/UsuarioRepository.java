@@ -1,6 +1,6 @@
-package com.ctglobal.arriendo.repository;
+package com.arriendaya.app.repository;
 
-import com.ctglobal.arriendo.model.Usuario;
+import com.arriendaya.app.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

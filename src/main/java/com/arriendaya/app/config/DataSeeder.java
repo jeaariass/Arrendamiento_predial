@@ -1,9 +1,10 @@
-package com.ctglobal.arriendo.config;
+package com.arriendaya.app.config;
 
-import com.ctglobal.arriendo.model.*;
-import com.ctglobal.arriendo.repository.*;
+import com.arriendaya.app.model.*;
+import com.arriendaya.app.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import java.math.BigDecimal;
  * de inmuebles esta vacia.
  */
 @Component
+@Order(1)
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
@@ -47,27 +49,27 @@ public class DataSeeder implements CommandLineRunner {
 
         inmuebleRepository.save(inmueble(propietario, bogota, "Apartamento moderno en Chapinero",
                 TipoInmueble.APARTAMENTO, "Calle 60 # 9-30", new BigDecimal("180000"), 4,
-                "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800"));
+                "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800", 4.6584, -74.0601));
 
         inmuebleRepository.save(inmueble(propietario, medellin, "Loft con vista a la ciudad",
                 TipoInmueble.LOFT, "Carrera 35 # 8-15, El Poblado", new BigDecimal("150000"), 2,
-                "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800"));
+                "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800", 6.2088, -75.5679));
 
         inmuebleRepository.save(inmueble(propietario, cartagena, "Casa colonial en el centro historico",
                 TipoInmueble.CASA, "Calle del Arsenal # 4-22", new BigDecimal("320000"), 6,
-                "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800"));
+                "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800", 10.4236, -75.5516));
 
         inmuebleRepository.save(inmueble(propietario, santaMarta, "Cabana frente al mar",
                 TipoInmueble.CABANA, "Via a Taganga km 2", new BigDecimal("220000"), 5,
-                "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800"));
+                "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800", 11.2659, -74.1928));
 
         inmuebleRepository.save(inmueble(propietario, bogota, "Habitacion privada cerca a la 93",
                 TipoInmueble.HABITACION, "Calle 93 # 13-20", new BigDecimal("90000"), 1,
-                "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=800"));
+                "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=800", 4.6765, -74.0493));
 
         inmuebleRepository.save(inmueble(propietario, medellin, "Finca campestre en el oriente antioqueno",
                 TipoInmueble.FINCA, "Vereda La Union, Rionegro", new BigDecimal("450000"), 10,
-                "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800"));
+                "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800", 6.1565, -75.3736));
     }
 
     private Propietario crearPropietarioDemo() {
@@ -97,7 +99,7 @@ public class DataSeeder implements CommandLineRunner {
 
     private Inmueble inmueble(Propietario propietario, Ubicacion ubicacion, String titulo,
                                TipoInmueble tipo, String direccion, BigDecimal precioNoche,
-                               Integer capacidad, String imagenUrl) {
+                               Integer capacidad, String imagenUrl, Double latitud, Double longitud) {
         Inmueble i = new Inmueble();
         i.setPropietario(propietario);
         i.setUbicacion(ubicacion);
@@ -108,6 +110,8 @@ public class DataSeeder implements CommandLineRunner {
         i.setPrecioNoche(precioNoche);
         i.setCapacidad(capacidad);
         i.setImagenUrl(imagenUrl);
+        i.setLatitud(latitud);
+        i.setLongitud(longitud);
         return i;
     }
 }

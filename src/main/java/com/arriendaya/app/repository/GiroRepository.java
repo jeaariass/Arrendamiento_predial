@@ -1,6 +1,6 @@
-package com.ctglobal.arriendo.repository;
+package com.arriendaya.app.repository;
 
-import com.ctglobal.arriendo.model.Giro;
+import com.arriendaya.app.model.Giro;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

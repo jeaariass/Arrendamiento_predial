@@ -40,7 +40,7 @@ definicion del profesor.
 4. Correr la aplicacion de alguna de estas formas:
    - Abrir `ArriendoApplication.java` y presionar **Run** (aparece arriba de `public static void main`).
    - O desde una terminal integrada: `mvn spring-boot:run`.
-5. Abrir el navegador en **http://localhost:8080**.
+5. Abrir el navegador en **http://localhost:58712** (puerto configurado en `server.port`).
 
 Al primer arranque, la aplicacion carga automaticamente unos datos de ejemplo (ciudades, bancos y 6 inmuebles
 con fotos) para que la pagina de inicio no se vea vacia. Esto solo ocurre una vez (si la tabla `inmueble` ya
@@ -50,10 +50,59 @@ Cuenta de ejemplo para iniciar sesion como propietario:
 - correo: `propietario.demo@arriendo.co`
 - contrasena: `demo1234`
 
+## Compartir la misma base de datos con el equipo
+
+Para que todos tengan exactamente los mismos datos (incluyendo los 500 alojamientos reales
+de Bogota importados de Inside Airbnb con coordenadas), hay un dump completo en `sql/`:
+
+```powershell
+# Windows PowerShell
+.\sql\restaurar.ps1 -Usuario postgres
+```
+
+```bash
+# Git Bash / Linux / Mac
+./sql/restaurar.sh postgres
+```
+
+Esto crea la base de datos `arriendo_inmuebles` (si no existe) y carga el esquema completo
+mas los datos (`sql/arriendo_inmuebles_dump.sql`). Pide la contrasena de Postgres de forma
+interactiva, no hay que escribirla en ningun archivo. Despues solo falta ajustar
+`spring.datasource.username`/`password` en `application.properties` con las credenciales
+locales de cada quien y correr la app normalmente.
+
+Si prefieren no usar el dump, correr la app en una base de datos vacia tambien reproduce los
+mismos datos: `DataSeeder` y `ImportadorAirbnbSeeder` cargan el seed de ejemplo y el CSV de
+Bogota (`src/main/resources/data/bogota_airbnb.csv`) automaticamente la primera vez.
+
+**Si regeneras el dump** (por ejemplo tras cambiar los datos de prueba), vuelve a correr:
+```powershell
+pg_dump -U postgres -h localhost -d arriendo_inmuebles --no-owner --no-privileges --column-inserts -f sql/arriendo_inmuebles_dump.sql
+```
+y borra manualmente las lineas `\restrict` / `\unrestrict` que agrega pg_dump 18 si aparecen
+(solo las entiende psql 18+; si algun companero tiene una version mas vieja, falla la restauracion).
+
+## Acceder desde otro dispositivo en la misma red (celular, etc.)
+
+1. Averiguar la IP local del PC que corre la app (ejemplo: `192.168.1.13`):
+   ```powershell
+   Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike "127.*" -and $_.IPAddress -notlike "169.254.*" }
+   ```
+2. Abrir el puerto en el firewall de Windows (requiere **PowerShell como Administrador**):
+   ```powershell
+   New-NetFirewallRule -DisplayName "Arriendo App 58712" -Direction Inbound -Protocol TCP -LocalPort 58712 -Action Allow
+   ```
+3. Desde el celular, conectado al mismo Wi-Fi, abrir `http://<IP-DEL-PC>:58712` (ej. `http://192.168.1.13:58712`).
+4. **Importante:** cerrar el puerto cuando ya no se necesite (la app no tiene HTTPS ni Spring Security completo,
+   mejor no dejarlo expuesto permanentemente):
+   ```powershell
+   Remove-NetFirewallRule -DisplayName "Arriendo App 58712"
+   ```
+
 ## Estructura del proyecto
 
 ```
-src/main/java/com/ctglobal/arriendo/
+src/main/java/com/arriendaya/app/
   model/        -> entidades JPA (Usuario, Propietario, Cliente, Inmueble, Ubicacion, Banco, Reserva, Pago, Giro)
   repository/   -> interfaces Spring Data JPA
   service/      -> logica de negocio (busqueda, registro, reservas)

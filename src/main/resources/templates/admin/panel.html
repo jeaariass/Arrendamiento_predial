@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de administracion &mdash; arriendaya</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: header}"></div>
+
+<section class="seccion">
+    <div class="contenedor">
+        <h2>Panel de administracion</h2>
+        <p class="ayuda" th:text="${totalInmuebles} + ' alojamientos en total. Ocupado = tiene una reserva pendiente o confirmada que cubre hoy.'"></p>
+
+        <form class="panel-filtro" method="get" action="/admin" style="margin-bottom: 20px; display:flex; gap:10px; align-items:center;">
+            <label for="filtroCiudad" style="font-size: 13px; font-weight: 700;">Ciudad:</label>
+            <select id="filtroCiudad" name="ciudad" onchange="this.form.submit()">
+                <option value="" th:selected="${ciudad == null or ciudad == ''}">Todas</option>
+                <option th:each="c : ${ciudadesTop}" th:value="${c}" th:text="${c}" th:selected="${c == ciudad}"></option>
+            </select>
+        </form>
+
+        <table class="tabla-admin">
+            <thead>
+                <tr>
+                    <th>Alojamiento</th>
+                    <th>Ciudad</th>
+                    <th>Propietario</th>
+                    <th>Estado</th>
+                    <th>Fechas ocupadas (90 dias)</th>
+                    <th>Fechas libres (90 dias)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="f : ${filas}">
+                    <td>
+                        <a th:href="@{/inmuebles/{id}(id=${f.inmueble.id})}" th:text="${f.inmueble.titulo}"></a>
+                    </td>
+                    <td th:text="${f.inmueble.ubicacion.ciudad}"></td>
+                    <td>
+                        <a th:href="@{/propietarios/{id}(id=${f.inmueble.propietario.id})}"
+                           th:text="${f.inmueble.propietario.usuario.nombre} + ' ' + ${f.inmueble.propietario.usuario.apellido}"></a>
+                    </td>
+                    <td>
+                        <span th:if="${f.ocupadoHoy}" class="badge-ocupado">Ocupado</span>
+                        <span th:unless="${f.ocupadoHoy}" class="badge-libre">Libre</span>
+                    </td>
+                    <td>
+                        <span th:if="${#lists.isEmpty(f.ocupados)}">&mdash;</span>
+                        <div th:each="r : ${f.ocupados}" th:text="${r.inicio} + ' a ' + ${r.fin}"></div>
+                    </td>
+                    <td>
+                        <span th:if="${#lists.isEmpty(f.libres)}">&mdash;</span>
+                        <div th:each="r : ${f.libres}" th:text="${r.inicio} + ' a ' + ${r.fin}"></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="paginacion" th:if="${totalPaginas > 1}">
+            <a th:each="p : ${#numbers.sequence(0, totalPaginas - 1)}"
+               th:href="@{/admin(ciudad=${ciudad}, pagina=${p})}"
+               th:text="${p + 1}"
+               th:classappend="${p == pagina} ? ' activa' : ''"
+               class="pagina-link"></a>
+        </div>
+    </div>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

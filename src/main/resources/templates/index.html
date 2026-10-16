@@ -5,6 +5,9 @@
     <title>arriendaya &mdash; Arrienda por dias donde quieras</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 </head>
 <body>
 
@@ -16,9 +19,10 @@
         <p class="subtitulo">Apartamentos, casas y cabanas para arrendar por dias en toda Colombia.</p>
 
         <form class="buscador" action="/buscar" method="get">
-            <div class="campo">
+            <div class="campo campo-destino">
                 <label>Destino</label>
-                <input type="text" name="ciudad" placeholder="Ej: Cartagena">
+                <input type="text" id="campoCiudad" name="ciudad" placeholder="Ej: Cartagena" autocomplete="off">
+                <div class="sugerencias" id="sugerenciasCiudad"></div>
             </div>
             <div class="campo">
                 <label>Llegada</label>
@@ -63,7 +67,27 @@
     </div>
 </section>
 
+<section class="seccion">
+    <div class="contenedor">
+        <h2>Todos los alojamientos en el mapa</h2>
+        <p class="ayuda">Acerca o aleja el mapa para explorar lo disponible en cada zona</p>
+        <div class="mapa-layout">
+            <div id="mapa" class="mapa-contenedor"></div>
+            <div id="listaMapa" class="lista-mapa"></div>
+        </div>
+    </div>
+</section>
+
 <div th:replace="~{fragments/layout :: footer}"></div>
+
+<script th:inline="javascript">
+    var CIUDADES_TOP = /*[[${ciudadesTop}]]*/ [];
+    var MAPA_FILTROS = {};
+</script>
+<script th:src="@{/js/buscador.js}"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script th:src="@{/js/mapa.js}"></script>
 
 </body>
 </html>

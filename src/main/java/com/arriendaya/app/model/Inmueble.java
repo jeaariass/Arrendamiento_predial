@@ -1,4 +1,4 @@
-package com.ctglobal.arriendo.model;
+package com.arriendaya.app.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -50,4 +50,10 @@ public class Inmueble {
 
     @Column(name = "imagen_url", length = 300)
     private String imagenUrl;
+
+    @Column(name = "latitud")
+    private Double latitud;
+
+    @Column(name = "longitud")
+    private Double longitud;
 }

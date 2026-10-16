@@ -1,4 +1,4 @@
-package com.ctglobal.arriendo.config;
+package com.arriendaya.app.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

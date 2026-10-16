@@ -1,10 +1,10 @@
-package com.ctglobal.arriendo.service;
+package com.arriendaya.app.service;
 
-import com.ctglobal.arriendo.model.Cliente;
-import com.ctglobal.arriendo.model.EstadoReserva;
-import com.ctglobal.arriendo.model.Inmueble;
-import com.ctglobal.arriendo.model.Reserva;
-import com.ctglobal.arriendo.repository.ReservaRepository;
+import com.arriendaya.app.model.Cliente;
+import com.arriendaya.app.model.EstadoReserva;
+import com.arriendaya.app.model.Inmueble;
+import com.arriendaya.app.model.Reserva;
+import com.arriendaya.app.repository.ReservaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -25,6 +25,10 @@
                 <ul style="color: var(--gris-suave); font-size: 14px;">
                     <li th:text="'Tipo: ' + ${inmueble.tipo}"></li>
                     <li th:text="'Capacidad: ' + ${inmueble.capacidad} + ' huespedes'"></li>
+                    <li>Anfitrion:
+                        <a th:href="@{/propietarios/{id}(id=${inmueble.propietario.id})}"
+                           th:text="${inmueble.propietario.usuario.nombre} + ' ' + ${inmueble.propietario.usuario.apellido}"></a>
+                    </li>
                 </ul>
             </div>
 

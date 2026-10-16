@@ -1,6 +1,6 @@
-package com.ctglobal.arriendo.repository;
+package com.arriendaya.app.repository;
 
-import com.ctglobal.arriendo.model.Pago;
+import com.arriendaya.app.model.Pago;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
