@@ -1,1 +1,0 @@
-psql: error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  no existe la base de datos «arriendo_test_restore»
