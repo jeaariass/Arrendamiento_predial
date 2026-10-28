@@ -1,0 +1,22 @@
+# Ejemplo para /etc/nginx/sites-available/arriendaya.conf en el VPS.
+# Ajustar el dominio y el puerto (debe ser el mismo PUERTO_HOST del .env del stack).
+# Pedir certificado despues de crear el archivo: certbot --nginx -d arriendaya.midominio.co
+
+server {
+    listen 443 ssl;
+    server_name arriendaya.midominio.co;
+
+    include /etc/nginx/snippets/tls-common.conf;
+
+    location / {
+        include /etc/nginx/snippets/proxy-common.conf;
+        include /etc/nginx/snippets/proxy-app.conf;
+        proxy_pass http://127.0.0.1:8102;
+    }
+}
+
+server {
+    listen 80;
+    server_name arriendaya.midominio.co;
+    return 301 https://$host$request_uri;
+}

@@ -1,0 +1,12 @@
+target/
+.git/
+.gitignore
+.idea/
+*.iml
+.vscode/
+HELP.md
+README.md
+CLAUDE.md
+restore_log.txt
+sql/
+deploy/

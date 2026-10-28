@@ -1,0 +1,30 @@
+# Este archivo se copia al VPS en /srv/stacks/arriendaya/docker-compose.yml y se gestiona
+# con Portainer (igual que el stack "spa"). Usa el PostgreSQL compartido del servidor
+# (db-postgis, red db_net) en vez de un contenedor de base de datos propio.
+#
+# No publica puertos en 0.0.0.0: nginx (en el host) hace proxy_pass a 127.0.0.1:<PUERTO_HOST>.
+
+services:
+  arriendaya-web:
+    image: ghcr.io/jeaariass/arriendaya-web:${TAG}
+    container_name: arriendaya-web
+    restart: unless-stopped
+    mem_limit: 512m
+    ports:
+      - "127.0.0.1:${PUERTO_HOST}:8080"
+    environment:
+      DB_URL: jdbc:postgresql://db-postgis:5432/${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SERVER_PORT: 8080
+    networks:
+      - db_net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  db_net:
+    external: true
