@@ -23,7 +23,7 @@ mkdir -p /srv/stacks/arriendaya
 Copiar `deploy/stacks/arriendaya/docker-compose.yml` a `/srv/stacks/arriendaya/docker-compose.yml`.
 
 Copiar `deploy/stacks/arriendaya/.env.example` a `/srv/stacks/arriendaya/.env` (permisos 600) y
-completar `DB_USERNAME`/`DB_PASSWORD` con lo que generó `nueva-bd-app.sh`, y `PUERTO_HOST` con
+completar `DB_USER`/`DB_PASSWORD` con lo que generó `nueva-bd-app.sh`, y `PUERTO` con
 el siguiente puerto libre registrado en `/srv/stacks/PUERTOS.md` (el doc dice "proximos
 proyectos desde 8102").
 
