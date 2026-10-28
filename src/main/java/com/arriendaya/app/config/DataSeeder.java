@@ -3,6 +3,7 @@ package com.arriendaya.app.config;
 import com.arriendaya.app.model.*;
 import com.arriendaya.app.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,7 +16,8 @@ import java.math.BigDecimal;
  * Carga unos pocos datos de ejemplo (bancos, ciudades, propietarios e
  * inmuebles) para que la pagina principal se vea con contenido real la
  * primera vez que se levanta la aplicacion. Solo se ejecuta si la tabla
- * de inmuebles esta vacia.
+ * de inmuebles esta vacia y si SEED_DEMO_USERS no esta en "false" (apagarlo
+ * en un servidor publico evita el propietario.demo con clave conocida).
  */
 @Component
 @Order(1)
@@ -29,10 +31,16 @@ public class DataSeeder implements CommandLineRunner {
     private final InmuebleRepository inmuebleRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${SEED_DEMO_USERS:true}")
+    private boolean seedDemoUsers;
+
+    @Value("${PROPIETARIO_DEMO_PASSWORD:demo1234}")
+    private String propietarioDemoPassword;
+
     @Override
     @Transactional
     public void run(String... args) {
-        if (inmuebleRepository.count() > 0) {
+        if (!seedDemoUsers || inmuebleRepository.count() > 0) {
             return;
         }
 
@@ -78,7 +86,7 @@ public class DataSeeder implements CommandLineRunner {
         usuario.setApellido("Ramirez");
         usuario.setEmail("propietario.demo@arriendo.co");
         usuario.setTelefono("3001234567");
-        usuario.setPasswordHash(passwordEncoder.encode("demo1234"));
+        usuario.setPasswordHash(passwordEncoder.encode(propietarioDemoPassword));
         usuario = usuarioRepository.save(usuario);
         return propietarioRepository.save(new Propietario(usuario));
     }

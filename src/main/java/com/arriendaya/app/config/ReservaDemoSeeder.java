@@ -10,6 +10,7 @@ import com.arriendaya.app.repository.InmuebleRepository;
 import com.arriendaya.app.repository.ReservaRepository;
 import com.arriendaya.app.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.PageRequest;
@@ -40,10 +41,16 @@ public class ReservaDemoSeeder implements CommandLineRunner {
     private final ReservaRepository reservaRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${SEED_DEMO_USERS:true}")
+    private boolean seedDemoUsers;
+
+    @Value("${CLIENTE_DEMO_PASSWORD:cliente1234}")
+    private String clienteDemoPassword;
+
     @Override
     @Transactional
     public void run(String... args) {
-        if (usuarioRepository.existsByEmail(EMAIL_CLIENTE_DEMO)) {
+        if (!seedDemoUsers || usuarioRepository.existsByEmail(EMAIL_CLIENTE_DEMO)) {
             return;
         }
 
@@ -56,7 +63,7 @@ public class ReservaDemoSeeder implements CommandLineRunner {
         usuario.setNombre("Cliente");
         usuario.setApellido("Demo");
         usuario.setEmail(EMAIL_CLIENTE_DEMO);
-        usuario.setPasswordHash(passwordEncoder.encode("cliente1234"));
+        usuario.setPasswordHash(passwordEncoder.encode(clienteDemoPassword));
         usuario = usuarioRepository.save(usuario);
         Cliente cliente = clienteRepository.save(new Cliente(usuario));
 

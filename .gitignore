@@ -6,3 +6,8 @@ target/
 .factorypath
 HELP.md
 .mvn/wrapper/maven-wrapper.jar
+
+# Secretos y datos que no van al repo (ver deploy/README.md)
+.env
+restore_log.txt
+sql/arriendo_inmuebles_dump.sql

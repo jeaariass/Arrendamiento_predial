@@ -52,35 +52,21 @@ Cuenta de ejemplo para iniciar sesion como propietario:
 
 ## Compartir la misma base de datos con el equipo
 
-Para que todos tengan exactamente los mismos datos (incluyendo los 500 alojamientos reales
-de Bogota importados de Inside Airbnb con coordenadas), hay un dump completo en `sql/`:
+No hay un dump en el repo (se quito: traia datos de prueba con hashes de clave y no hacia
+falta). Para tener los mismos datos, basta correr la app en una base de datos vacia: Flyway
+crea el esquema (`src/main/resources/db/migration`) y los seeders cargan el seed de ejemplo
+mas los 500 alojamientos reales de Bogota de Inside Airbnb automaticamente la primera vez
+(`DataSeeder`, `ImportadorAirbnbSeeder`, `ReservaDemoSeeder`, `AdminSeeder`; ver
+`src/main/java/.../config/`).
 
-```powershell
-# Windows PowerShell
-.\sql\restaurar.ps1 -Usuario postgres
-```
-
-```bash
-# Git Bash / Linux / Mac
-./sql/restaurar.sh postgres
-```
-
-Esto crea la base de datos `arriendo_inmuebles` (si no existe) y carga el esquema completo
-mas los datos (`sql/arriendo_inmuebles_dump.sql`). Pide la contrasena de Postgres de forma
-interactiva, no hay que escribirla en ningun archivo. Despues solo falta ajustar
-`spring.datasource.username`/`password` en `application.properties` con las credenciales
-locales de cada quien y correr la app normalmente.
-
-Si prefieren no usar el dump, correr la app en una base de datos vacia tambien reproduce los
-mismos datos: `DataSeeder` y `ImportadorAirbnbSeeder` cargan el seed de ejemplo y el CSV de
-Bogota (`src/main/resources/data/bogota_airbnb.csv`) automaticamente la primera vez.
-
-**Si regeneras el dump** (por ejemplo tras cambiar los datos de prueba), vuelve a correr:
+Si en algun momento hace falta un dump propio para compartir, `sql/restaurar.ps1` /
+`sql/restaurar.sh` siguen ahi, pero esperan `sql/arriendo_inmuebles_dump.sql`, que hay que
+generar primero:
 ```powershell
 pg_dump -U postgres -h localhost -d arriendo_inmuebles --no-owner --no-privileges --column-inserts -f sql/arriendo_inmuebles_dump.sql
 ```
-y borra manualmente las lineas `\restrict` / `\unrestrict` que agrega pg_dump 18 si aparecen
-(solo las entiende psql 18+; si algun companero tiene una version mas vieja, falla la restauracion).
+(ese archivo queda ignorado por git, no se sube). Borrar manualmente las lineas `\restrict` /
+`\unrestrict` que agrega pg_dump 18 si aparecen (solo las entiende psql 18+).
 
 ## Acceder desde otro dispositivo en la misma red (celular, etc.)
 

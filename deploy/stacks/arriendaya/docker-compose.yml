@@ -1,12 +1,13 @@
 # Stack de produccion para /srv/stacks/arriendaya/docker-compose.yml, gestionado con Portainer.
-# Sigue la plantilla del VPS (/srv/stacks/_plantilla), pero con un solo servicio porque
-# arriendaya es un monolito Spring Boot + Thymeleaf (no hay frontend/backend separados).
+# Sigue la plantilla del VPS (/srv/stacks/_plantilla). arriendaya es un monolito Spring Boot +
+# Thymeleaf (no hay frontend/backend separados), pero igual se nombra "backend" / "-api" para
+# coincidir con la convencion de proyectos de un solo contenedor (ej. academia-api/academia-backend).
 name: arriendaya
 
 services:
-  app:
-    image: ghcr.io/jeaariass/arriendaya-web:${TAG}
-    container_name: arriendaya-app
+  backend:
+    image: ghcr.io/jeaariass/arriendaya-api:${TAG}
+    container_name: arriendaya-backend
     # Informacion que muestra el panel. Aparece sola al desplegar.
     labels:
       panel.tipo: "proyecto"
@@ -24,10 +25,19 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       SERVER_PORT: "8080"
+      SEED_DEMO_USERS: ${SEED_DEMO_USERS:-false}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75"
       TZ: America/Bogota
     ports:
       - "127.0.0.1:${PUERTO}:8080"
     networks: [default, db_net]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   default:

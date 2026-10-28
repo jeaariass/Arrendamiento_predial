@@ -11,7 +11,7 @@
 $ErrorActionPreference = "Stop"
 
 $commit = (git rev-parse --short=7 HEAD).Trim()
-$image = "ghcr.io/jeaariass/arriendaya-web:$commit"
+$image = "ghcr.io/jeaariass/arriendaya-api:$commit"
 
 Write-Host "Construyendo $image ..."
 docker build -t $image -f (Join-Path $PSScriptRoot "..\Dockerfile") (Join-Path $PSScriptRoot "..")
