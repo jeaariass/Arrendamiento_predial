@@ -15,11 +15,43 @@
         <h2>Panel de administracion</h2>
         <p class="ayuda" th:text="${totalInmuebles} + ' alojamientos en total. Ocupado = tiene una reserva pendiente o confirmada que cubre hoy.'"></p>
 
+        <div class="exito-mensaje" th:if="${mensaje}" th:text="${mensaje}"></div>
+        <div class="error-mensaje" th:if="${error}" th:text="${error}"></div>
+
+        <details style="margin-bottom: 20px;">
+            <summary style="cursor: pointer; font-weight: 700; font-size: 13px;">
+                Arrendadores demo (usuario / clave) &mdash; <span th:text="${#lists.size(arrendadores)}"></span> cuentas
+            </summary>
+            <table class="tabla-admin" th:if="${not #lists.isEmpty(arrendadores)}" style="margin-top: 10px;">
+                <thead><tr><th>Usuario</th><th>Clave</th></tr></thead>
+                <tbody>
+                    <tr th:each="c : ${arrendadores}">
+                        <td th:text="${c.email}"></td>
+                        <td th:text="${c.clave}"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="ayuda" th:if="${#lists.isEmpty(arrendadores)}">
+                SEED_DEMO_USERS esta en false: no hay claves publicas de demo en este servidor.
+            </p>
+        </details>
+
+        <form method="post" action="/admin/reorganizar" style="margin-bottom: 20px;"
+              onsubmit="return confirm('Esto borra TODAS las reservas actuales y crea unas nuevas al azar entre -90 y +90 dias. Continuar?');">
+            <button type="submit">Reorganizar reservas (-90 / +90 dias)</button>
+        </form>
+
         <form class="panel-filtro" method="get" action="/admin" style="margin-bottom: 20px; display:flex; gap:10px; align-items:center;">
             <label for="filtroCiudad" style="font-size: 13px; font-weight: 700;">Ciudad:</label>
             <select id="filtroCiudad" name="ciudad" onchange="this.form.submit()">
                 <option value="" th:selected="${ciudad == null or ciudad == ''}">Todas</option>
                 <option th:each="c : ${ciudadesTop}" th:value="${c}" th:text="${c}" th:selected="${c == ciudad}"></option>
+            </select>
+            <label for="filtroEstado" style="font-size: 13px; font-weight: 700;">Estado:</label>
+            <select id="filtroEstado" name="estado" onchange="this.form.submit()">
+                <option value="" th:selected="${estado == null or estado == ''}">Todos</option>
+                <option value="LIBRE" th:selected="${estado == 'LIBRE'}">Libres</option>
+                <option value="OCUPADO" th:selected="${estado == 'OCUPADO'}">Ocupados</option>
             </select>
         </form>
 
@@ -32,6 +64,7 @@
                     <th>Estado</th>
                     <th>Fechas ocupadas (90 dias)</th>
                     <th>Fechas libres (90 dias)</th>
+                    <th>Asignar</th>
                 </tr>
             </thead>
             <tbody>
@@ -55,6 +88,20 @@
                     <td>
                         <span th:if="${#lists.isEmpty(f.libres)}">&mdash;</span>
                         <div th:each="r : ${f.libres}" th:text="${r.inicio} + ' a ' + ${r.fin}"></div>
+                    </td>
+                    <td>
+                        <details th:unless="${f.ocupadoHoy}">
+                            <summary style="cursor: pointer;">Asignar</summary>
+                            <form method="post" action="/admin/asignar" style="display:flex; flex-direction:column; gap:6px; min-width:200px; margin-top:6px;">
+                                <input type="hidden" name="inmuebleId" th:value="${f.inmueble.id}">
+                                <input type="email" name="emailCliente" placeholder="correo de la persona" required>
+                                <input type="date" name="fechaInicio" required>
+                                <input type="date" name="fechaFin" required>
+                                <input type="number" name="valorTotal" step="1" min="1" placeholder="cuanto debe pagar" required>
+                                <button type="submit">Confirmar asignacion</button>
+                            </form>
+                        </details>
+                        <span th:if="${f.ocupadoHoy}">&mdash;</span>
                     </td>
                 </tr>
             </tbody>

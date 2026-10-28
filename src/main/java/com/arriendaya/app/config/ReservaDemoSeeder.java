@@ -29,7 +29,7 @@ import java.util.List;
  * todo se ve "libre" y no se puede demostrar nada.
  */
 @Component
-@Order(4)
+@Order(5)
 @RequiredArgsConstructor
 public class ReservaDemoSeeder implements CommandLineRunner {
 

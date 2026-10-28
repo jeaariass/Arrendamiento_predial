@@ -38,7 +38,7 @@
                     <small style="font-size: 13px; font-weight: 400;"> COP / noche</small>
                 </div>
 
-                <form th:action="@{/inmuebles/{id}/reservar(id=${inmueble.id})}" method="post">
+                <form th:action="@{/inmuebles/{id}/reservar/preview(id=${inmueble.id})}" method="get">
                     <div>
                         <label>Llegada</label>
                         <input type="date" name="llegada" required>
@@ -47,7 +47,7 @@
                         <label>Salida</label>
                         <input type="date" name="salida" required>
                     </div>
-                    <button class="boton-reservar" type="submit">Reservar</button>
+                    <button class="boton-reservar" type="submit">Ver precio y reservar</button>
                 </form>
             </div>
         </div>

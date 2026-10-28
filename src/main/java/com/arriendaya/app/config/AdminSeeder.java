@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
  * independiente de esos roles.
  */
 @Component
-@Order(3)
+@Order(4)
 @RequiredArgsConstructor
 public class AdminSeeder implements CommandLineRunner {
 

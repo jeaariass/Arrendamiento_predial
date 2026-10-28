@@ -16,6 +16,8 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres
       SERVER_PORT: "8080"
+      ADMIN_EMAIL: admin@local.test
+      ADMIN_PASSWORD: admin1234local
     depends_on:
       db:
         condition: service_healthy

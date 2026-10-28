@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmar reserva &mdash; arriendaya</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: header}"></div>
+
+<section class="seccion">
+    <div class="contenedor" style="max-width: 600px;">
+        <h2 style="margin-top: 0;">Confirmar reserva</h2>
+
+        <div class="exito-mensaje">
+            <p><strong th:text="${inmueble.titulo}"></strong></p>
+            <p>Fechas: <strong th:text="${llegada}"></strong> a <strong th:text="${salida}"></strong>
+                (<span th:text="${noches}"></span> noches)</p>
+            <p>Valor total: <strong th:text="'$' + ${#numbers.formatInteger(valorTotal, 0, 'POINT')} + ' COP'"></strong></p>
+        </div>
+
+        <form th:action="@{/inmuebles/{id}/reservar(id=${inmueble.id})}" method="post">
+            <input type="hidden" name="llegada" th:value="${llegada}">
+            <input type="hidden" name="salida" th:value="${salida}">
+            <button class="boton-reservar" type="submit">Confirmar y reservar</button>
+        </form>
+        <p style="margin-top: 14px;"><a th:href="@{/inmuebles/{id}(id=${inmueble.id})}">&larr; Cambiar fechas</a></p>
+    </div>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

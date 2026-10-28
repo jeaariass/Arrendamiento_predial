@@ -69,7 +69,22 @@ public interface InmuebleRepository extends JpaRepository<Inmueble, Long> {
         select i from Inmueble i
         join i.ubicacion u
         where (:ciudad = '' or lower(u.ciudad) like lower(concat('%', :ciudad, '%')))
+          and (
+            :estadoFiltro = ''
+            or (:estadoFiltro = 'OCUPADO' and exists (
+                select 1 from Reserva r
+                where r.inmueble = i and r.estado in ('PENDIENTE', 'CONFIRMADA')
+                  and r.fechaInicio <= current_date and r.fechaFin >= current_date
+            ))
+            or (:estadoFiltro = 'LIBRE' and not exists (
+                select 1 from Reserva r
+                where r.inmueble = i and r.estado in ('PENDIENTE', 'CONFIRMADA')
+                  and r.fechaInicio <= current_date and r.fechaFin >= current_date
+            ))
+          )
         order by i.id asc
         """)
-    Page<Inmueble> paraAdmin(@Param("ciudad") String ciudad, Pageable pageable);
+    Page<Inmueble> paraAdmin(@Param("ciudad") String ciudad,
+                             @Param("estadoFiltro") String estadoFiltro,
+                             Pageable pageable);
 }

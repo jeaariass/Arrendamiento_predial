@@ -39,6 +39,8 @@ public class AuthController {
                     serPropietario, serCliente);
             session.setAttribute("usuarioId", usuario.getId());
             session.setAttribute("usuarioNombre", usuario.getNombre());
+            session.setAttribute("esAdmin", false);
+            session.setAttribute("esPropietario", serPropietario);
             return "redirect:/";
         } catch (IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
@@ -63,6 +65,7 @@ public class AuthController {
         session.setAttribute("usuarioId", usuario.getId());
         session.setAttribute("usuarioNombre", usuario.getNombre());
         session.setAttribute("esAdmin", usuario.isEsAdmin());
+        session.setAttribute("esPropietario", usuarioService.comoPropietario(usuario.getId()).isPresent());
         return "redirect:/";
     }
 

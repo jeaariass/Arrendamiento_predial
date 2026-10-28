@@ -54,6 +54,10 @@ public class UsuarioService {
         return usuarioRepository.findByEmail(email);
     }
 
+    public Optional<Usuario> porId(Long id) {
+        return usuarioRepository.findById(id);
+    }
+
     public Optional<Propietario> comoPropietario(Long usuarioId) {
         return propietarioRepository.findById(usuarioId);
     }

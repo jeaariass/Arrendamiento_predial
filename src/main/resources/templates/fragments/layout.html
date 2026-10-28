@@ -13,6 +13,8 @@
             </th:block>
             <th:block th:if="${session.usuarioId != null}">
                 <a th:if="${session.esAdmin == true}" href="/admin">Panel admin</a>
+                <a th:if="${session.esPropietario == true}" th:href="@{/propietarios/{id}(id=${session.usuarioId})}">Mis inmuebles</a>
+                <a href="/mi-cuenta">Mi cuenta</a>
                 <span th:text="'Hola, ' + ${session.usuarioNombre}" style="margin-left: 18px; font-size: 14px;"></span>
                 <a href="/logout">Salir</a>
             </th:block>

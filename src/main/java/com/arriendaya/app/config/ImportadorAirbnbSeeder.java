@@ -14,8 +14,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Carga alojamientos reales de Bogota tomados de Inside Airbnb
@@ -23,6 +22,11 @@ import java.util.Map;
  * para que la pagina tenga datos reales ademas de los de ejemplo. El CSV ya
  * viene filtrado y limpio en src/main/resources/data/bogota_airbnb.csv.
  * Solo corre una vez: se detecta con un Usuario marcador.
+ *
+ * Los inmuebles importados no quedan cada uno con su propio "dueno de un solo
+ * alojamiento" (eran 380+ cuentas sin clave conocida): se reparten al azar
+ * entre el pool chico de propietarios de PropietariosPoolSeeder, asi cada
+ * dueno termina con varias propiedades.
  */
 @Component
 @Order(2)
@@ -32,7 +36,7 @@ public class ImportadorAirbnbSeeder implements CommandLineRunner {
     private static final String EMAIL_MARCADOR = "importacion.airbnb@arriendaya.local";
 
     private final UsuarioRepository usuarioRepository;
-    private final PropietarioRepository propietarioRepository;
+    private final PropietariosPoolSeeder propietariosPoolSeeder;
     private final UbicacionRepository ubicacionRepository;
     private final InmuebleRepository inmuebleRepository;
     private final PasswordEncoder passwordEncoder;
@@ -52,7 +56,11 @@ public class ImportadorAirbnbSeeder implements CommandLineRunner {
                     return ubicacionRepository.save(u);
                 });
 
-        Map<String, Propietario> propietariosPorHost = new HashMap<>();
+        List<Propietario> pool = propietariosPoolSeeder.cargarPool();
+        if (pool.isEmpty()) {
+            throw new IllegalStateException("El pool de propietarios esta vacio: no se puede importar Airbnb sin duenos");
+        }
+        java.util.Random random = new java.util.Random();
         int importados = 0;
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -66,8 +74,6 @@ public class ImportadorAirbnbSeeder implements CommandLineRunner {
                 if (campos.length < 10) {
                     continue;
                 }
-                String hostId = campos[0];
-                String hostName = campos[1];
                 String nombreInmueble = campos[2];
                 String roomType = campos[3];
                 String barrio = campos[4];
@@ -77,8 +83,7 @@ public class ImportadorAirbnbSeeder implements CommandLineRunner {
                 Double latitud = Double.valueOf(campos[8]);
                 Double longitud = Double.valueOf(campos[9]);
 
-                Propietario propietario = propietariosPorHost.computeIfAbsent(hostId,
-                        id -> crearPropietarioHost(id, hostName));
+                Propietario propietario = pool.get(random.nextInt(pool.size()));
 
                 Inmueble inmueble = new Inmueble();
                 inmueble.setPropietario(propietario);
@@ -106,22 +111,6 @@ public class ImportadorAirbnbSeeder implements CommandLineRunner {
 
         org.slf4j.LoggerFactory.getLogger(ImportadorAirbnbSeeder.class)
                 .info("Importados {} alojamientos reales de Bogota desde Inside Airbnb", importados);
-    }
-
-    private Propietario crearPropietarioHost(String hostId, String hostName) {
-        String email = "airbnb-host-" + hostId + "@arriendaya-import.co";
-        return usuarioRepository.findByEmail(email)
-                .flatMap(u -> propietarioRepository.findById(u.getId()))
-                .orElseGet(() -> {
-                    Usuario usuario = new Usuario();
-                    String[] partes = hostName.trim().split("\\s+", 2);
-                    usuario.setNombre(partes[0]);
-                    usuario.setApellido(partes.length > 1 ? partes[1] : "(anfitrion Airbnb)");
-                    usuario.setEmail(email);
-                    usuario.setPasswordHash(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
-                    usuario = usuarioRepository.save(usuario);
-                    return propietarioRepository.save(new Propietario(usuario));
-                });
     }
 
     private TipoInmueble mapearTipo(String roomType) {

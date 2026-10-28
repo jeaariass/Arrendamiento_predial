@@ -21,6 +21,9 @@ public class Cliente {
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
+    @Column(name = "cuenta_bancaria", length = 40)
+    private String cuentaBancaria;
+
     public Cliente(Usuario usuario) {
         this.usuario = usuario;
     }

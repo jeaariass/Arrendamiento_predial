@@ -1,5 +1,7 @@
 package com.arriendaya.app.service;
 
+import com.arriendaya.app.config.PropietariosPoolSeeder;
+import com.arriendaya.app.dto.CredencialDemo;
 import com.arriendaya.app.dto.EstadoOcupacion;
 import com.arriendaya.app.dto.RangoFecha;
 import com.arriendaya.app.model.Inmueble;
@@ -7,6 +9,7 @@ import com.arriendaya.app.model.Reserva;
 import com.arriendaya.app.repository.InmuebleRepository;
 import com.arriendaya.app.repository.ReservaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -25,9 +28,28 @@ public class AdminService {
     private final InmuebleRepository inmuebleRepository;
     private final ReservaRepository reservaRepository;
 
-    public Page<Inmueble> listarPagina(String ciudad, int pagina) {
-        String query = (ciudad == null || ciudad.isBlank()) ? "" : ciudad.trim();
-        return inmuebleRepository.paraAdmin(query, PageRequest.of(Math.max(pagina, 0), TAMANO_PAGINA));
+    @Value("${SEED_DEMO_USERS:true}")
+    private boolean seedDemoUsers;
+
+    public Page<Inmueble> listarPagina(String ciudad, String estado, int pagina) {
+        String ciudadQuery = (ciudad == null || ciudad.isBlank()) ? "" : ciudad.trim();
+        String estadoQuery = (estado == null) ? "" : estado.trim().toUpperCase();
+        if (!estadoQuery.equals("LIBRE") && !estadoQuery.equals("OCUPADO")) {
+            estadoQuery = "";
+        }
+        return inmuebleRepository.paraAdmin(ciudadQuery, estadoQuery, PageRequest.of(Math.max(pagina, 0), TAMANO_PAGINA));
+    }
+
+    /** Lista de usuario/clave de los duenos del pool demo, solo visible si el demo esta prendido. */
+    public List<CredencialDemo> listaArrendadores() {
+        if (!seedDemoUsers) {
+            return List.of();
+        }
+        List<CredencialDemo> lista = new ArrayList<>();
+        for (int i = 1; i <= PropietariosPoolSeeder.TAMANO_POOL; i++) {
+            lista.add(new CredencialDemo(PropietariosPoolSeeder.email(i), PropietariosPoolSeeder.claveDemo(i)));
+        }
+        return lista;
     }
 
     public EstadoOcupacion calcularOcupacion(Inmueble inmueble) {

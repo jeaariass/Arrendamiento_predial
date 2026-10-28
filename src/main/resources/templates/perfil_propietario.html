@@ -23,20 +23,35 @@
 
         <h2 th:text="${#lists.size(inmuebles)} + ' alojamientos publicados'"></h2>
 
-        <div class="grid-propiedades" th:if="${not #lists.isEmpty(inmuebles)}">
-            <a class="tarjeta" th:each="i : ${inmuebles}" th:href="@{/inmuebles/{id}(id=${i.id})}">
-                <img th:src="${i.imagenUrl}" th:alt="${i.titulo}">
-                <div class="cuerpo">
-                    <span class="tipo" th:text="${i.tipo}"></span>
-                    <h3 th:text="${i.titulo}"></h3>
-                    <div class="ubicacion" th:text="${i.ubicacion.ciudad + ', ' + i.ubicacion.pais}"></div>
-                    <div class="precio">
-                        <span th:text="'$' + ${#numbers.formatInteger(i.precioNoche, 0, 'POINT')}"></span>
-                        <small>COP / noche</small>
-                    </div>
-                </div>
-            </a>
-        </div>
+        <table class="tabla-admin" th:if="${not #lists.isEmpty(inmuebles)}">
+            <thead>
+                <tr>
+                    <th>Alojamiento</th>
+                    <th>Ciudad</th>
+                    <th>Precio / noche</th>
+                    <th>Estado</th>
+                    <th>Reservado por</th>
+                    <th>Fechas</th>
+                    <th>Valor de la reserva</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="fila : ${inmuebles}">
+                    <td>
+                        <a th:href="@{/inmuebles/{id}(id=${fila.inmueble.id})}" th:text="${fila.inmueble.titulo}"></a>
+                    </td>
+                    <td th:text="${fila.inmueble.ubicacion.ciudad}"></td>
+                    <td th:text="'$' + ${#numbers.formatInteger(fila.inmueble.precioNoche, 0, 'POINT')}"></td>
+                    <td>
+                        <span th:if="${fila.reservaActual != null}" class="badge-ocupado">Reservado</span>
+                        <span th:if="${fila.reservaActual == null}" class="badge-libre">Libre</span>
+                    </td>
+                    <td th:text="${fila.reservaActual != null} ? (${fila.reservaActual.cliente.usuario.nombre} + ' ' + ${fila.reservaActual.cliente.usuario.apellido}) : '&mdash;'"></td>
+                    <td th:text="${fila.reservaActual != null} ? (${fila.reservaActual.fechaInicio} + ' a ' + ${fila.reservaActual.fechaFin}) : '&mdash;'"></td>
+                    <td th:text="${fila.reservaActual != null} ? ('$' + ${#numbers.formatInteger(fila.reservaActual.valorTotal, 0, 'POINT')}) : '&mdash;'"></td>
+                </tr>
+            </tbody>
+        </table>
 
         <div class="vacio" th:if="${#lists.isEmpty(inmuebles)}">
             Este propietario aun no tiene alojamientos publicados.

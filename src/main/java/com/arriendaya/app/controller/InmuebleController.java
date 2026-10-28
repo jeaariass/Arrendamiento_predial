@@ -28,6 +28,31 @@ public class InmuebleController {
         return "detalle";
     }
 
+    @GetMapping("/{id}/reservar/preview")
+    public String previsualizarReserva(@PathVariable Long id,
+                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate llegada,
+                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate salida,
+                                        HttpSession session,
+                                        Model model) {
+        if (session.getAttribute("usuarioId") == null) {
+            return "redirect:/login";
+        }
+        var inmueble = inmuebleService.obtener(id);
+        try {
+            var valorTotal = reservaService.calcularValor(id, llegada, salida);
+            model.addAttribute("inmueble", inmueble);
+            model.addAttribute("llegada", llegada);
+            model.addAttribute("salida", salida);
+            model.addAttribute("noches", java.time.temporal.ChronoUnit.DAYS.between(llegada, salida));
+            model.addAttribute("valorTotal", valorTotal);
+            return "reserva_confirmar";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("inmueble", inmueble);
+            model.addAttribute("error", ex.getMessage());
+            return "detalle";
+        }
+    }
+
     @PostMapping("/{id}/reservar")
     public String reservar(@PathVariable Long id,
                             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate llegada,

@@ -20,4 +20,14 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
         order by r.fechaInicio asc
         """)
     List<Reserva> futurasPorInmueble(@Param("inmuebleId") Long inmuebleId, @Param("hoy") LocalDate hoy);
+
+    @Query("""
+        select count(r) > 0 from Reserva r
+        where r.inmueble.id = :inmuebleId
+          and r.estado in ('PENDIENTE', 'CONFIRMADA')
+          and r.fechaInicio <= :fechaFin and r.fechaFin >= :fechaInicio
+        """)
+    boolean existeSolapada(@Param("inmuebleId") Long inmuebleId,
+                            @Param("fechaInicio") LocalDate fechaInicio,
+                            @Param("fechaFin") LocalDate fechaFin);
 }
