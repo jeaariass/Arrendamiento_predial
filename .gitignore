@@ -9,5 +9,6 @@ HELP.md
 
 # Secretos y datos que no van al repo (ver deploy/README.md)
 .env
+CONEXION-BD.md
 restore_log.txt
 sql/arriendo_inmuebles_dump.sql
