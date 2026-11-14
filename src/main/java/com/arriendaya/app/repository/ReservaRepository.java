@@ -1,5 +1,6 @@
 package com.arriendaya.app.repository;
 
+import com.arriendaya.app.model.EstadoReserva;
 import com.arriendaya.app.model.Reserva;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,6 +19,9 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
     @Query("select coalesce(sum(r.valorTotal), 0) from Reserva r where r.estado = 'PENDIENTE'")
     java.math.BigDecimal sumarDeudaPendiente();
+
+    @Query("select r from Reserva r where (:estado is null or r.estado = :estado) order by r.fechaReserva desc")
+    List<Reserva> paraAdmin(@Param("estado") EstadoReserva estado);
 
     @Query("""
         select r from Reserva r

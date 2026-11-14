@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar mi informacion &mdash; arriendaya</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: header}"></div>
+
+<section class="seccion">
+    <div class="contenedor" style="max-width: 560px;">
+        <p><a href="/mi-cuenta">&larr; Volver a mi cuenta</a></p>
+        <h2 style="margin-top: 0;">Editar mi informacion</h2>
+
+        <div class="exito-mensaje" th:if="${mensaje}" th:text="${mensaje}"></div>
+        <div class="error-mensaje" th:if="${error}" th:text="${error}"></div>
+
+        <div class="tarjeta-contenido">
+            <h1>Datos personales</h1>
+            <form th:action="@{/mi-cuenta/ajustes}" method="post">
+                <div class="campo-form">
+                    <label>Nombre</label>
+                    <input type="text" name="nombre" required th:value="${usuario.nombre}">
+                </div>
+                <div class="campo-form">
+                    <label>Apellido</label>
+                    <input type="text" name="apellido" required th:value="${usuario.apellido}">
+                </div>
+                <div class="campo-form">
+                    <label>Telefono</label>
+                    <input type="text" name="telefono" th:value="${usuario.telefono}">
+                </div>
+                <button type="submit" class="boton-ancho">Guardar datos</button>
+            </form>
+        </div>
+
+        <div class="tarjeta-contenido">
+            <h1>Cambiar contrasena</h1>
+            <form th:action="@{/mi-cuenta/ajustes/clave}" method="post">
+                <div class="campo-form">
+                    <label>Contrasena actual</label>
+                    <input type="password" name="actual" required>
+                </div>
+                <div class="campo-form">
+                    <label>Contrasena nueva</label>
+                    <input type="password" name="nueva" required minlength="6">
+                </div>
+                <div class="campo-form">
+                    <label>Confirmar contrasena nueva</label>
+                    <input type="password" name="confirmar" required minlength="6">
+                </div>
+                <button type="submit" class="boton-ancho">Cambiar contrasena</button>
+            </form>
+        </div>
+
+        <div class="tarjeta-contenido">
+            <h1>Cuenta bancaria</h1>
+            <p class="ayuda" style="margin-top:-6px;">Para que la plataforma te devuelva dinero si aplica (ej. una reserva cancelada despues de pagada).</p>
+            <form th:action="@{/mi-cuenta/ajustes/banco}" method="post">
+                <div class="campo-form">
+                    <label>Cuenta bancaria</label>
+                    <input type="text" name="cuentaBancaria" maxlength="40"
+                           th:value="${cliente.cuentaBancaria}" placeholder="Banco y numero de cuenta">
+                </div>
+                <button type="submit" class="boton-ancho">Guardar</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

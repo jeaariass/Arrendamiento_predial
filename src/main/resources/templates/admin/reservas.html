@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Reservas &mdash; arriendaya</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: header}"></div>
+
+<section class="seccion">
+    <div class="contenedor">
+        <p><a href="/admin">&larr; Volver al panel</a></p>
+        <h2>Reservas</h2>
+        <p class="ayuda">Activas = Pendiente o Confirmada. Las demas quedan en el historial igual.</p>
+
+        <form class="panel-filtro" method="get" action="/admin/reservas" style="margin-bottom: 20px; display:flex; gap:10px; align-items:center;">
+            <label for="filtroEstado" style="font-size: 13px; font-weight: 700;">Estado:</label>
+            <select id="filtroEstado" name="estado" onchange="this.form.submit()">
+                <option value="" th:selected="${estado == null}">Todas</option>
+                <option value="PENDIENTE" th:selected="${estado != null and estado.name() == 'PENDIENTE'}">Pendiente</option>
+                <option value="CONFIRMADA" th:selected="${estado != null and estado.name() == 'CONFIRMADA'}">Confirmada</option>
+                <option value="CANCELADA" th:selected="${estado != null and estado.name() == 'CANCELADA'}">Cancelada</option>
+                <option value="FINALIZADA" th:selected="${estado != null and estado.name() == 'FINALIZADA'}">Finalizada</option>
+            </select>
+        </form>
+
+        <div class="tabla-admin-wrap">
+        <table class="tabla-admin" th:if="${not #lists.isEmpty(reservas)}">
+            <thead>
+                <tr><th>Cliente</th><th>Alojamiento</th><th>Ciudad</th><th>Fechas</th><th>Valor</th><th>Estado</th></tr>
+            </thead>
+            <tbody>
+                <tr th:each="r : ${reservas}">
+                    <td>
+                        <a th:href="@{/admin/personas/{id}(id=${r.cliente.usuario.id})}"
+                           th:text="${r.cliente.usuario.nombre} + ' ' + ${r.cliente.usuario.apellido}"></a>
+                    </td>
+                    <td><a th:href="@{/inmuebles/{id}(id=${r.inmueble.id})}" th:text="${r.inmueble.titulo}"></a></td>
+                    <td th:text="${r.inmueble.ubicacion.ciudad}"></td>
+                    <td th:text="${r.fechaInicio} + ' a ' + ${r.fechaFin}"></td>
+                    <td th:text="'$' + ${#numbers.formatInteger(r.valorTotal, 0, 'POINT')}"></td>
+                    <td th:text="${r.estado}"></td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="vacio" th:if="${#lists.isEmpty(reservas)}">
+            No hay reservas con ese filtro.
+        </div>
+    </div>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

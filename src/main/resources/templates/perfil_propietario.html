@@ -30,7 +30,8 @@
 
         <h2 th:text="${#lists.size(inmuebles)} + ' alojamientos publicados'"></h2>
 
-        <table class="tabla-admin" th:if="${not #lists.isEmpty(inmuebles)}">
+        <div class="tabla-admin-wrap" th:if="${not #lists.isEmpty(inmuebles)}">
+        <table class="tabla-admin">
             <thead>
                 <tr>
                     <th>Alojamiento</th>
@@ -67,6 +68,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
 
         <div class="vacio" th:if="${#lists.isEmpty(inmuebles)}">
             Este propietario aun no tiene alojamientos publicados.
@@ -74,7 +76,8 @@
 
         <div th:if="${esPropio}" style="margin-top: 40px;">
             <h2>Historial de reservas en mis inmuebles</h2>
-            <table class="tabla-admin" th:if="${not #lists.isEmpty(historialReservas)}">
+            <div class="tabla-admin-wrap" th:if="${not #lists.isEmpty(historialReservas)}">
+            <table class="tabla-admin">
                 <thead>
                     <tr><th>Alojamiento</th><th>Reservado por</th><th>Fechas</th><th>Valor</th><th>Estado</th></tr>
                 </thead>
@@ -88,6 +91,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
             <div class="vacio" th:if="${#lists.isEmpty(historialReservas)}">
                 Todavia no tienes ninguna reserva en tus inmuebles.
             </div>

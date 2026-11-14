@@ -50,6 +50,8 @@ public class InmuebleController {
                          @RequestParam String ciudad, @RequestParam(defaultValue = "Colombia") String pais,
                          @RequestParam BigDecimal precioNoche, @RequestParam Integer capacidad,
                          @RequestParam(required = false) String imagenUrl,
+                         @RequestParam(required = false) Double latitud,
+                         @RequestParam(required = false) Double longitud,
                          HttpSession session) {
         Long usuarioId = (Long) session.getAttribute("usuarioId");
         if (usuarioId == null) {
@@ -70,6 +72,8 @@ public class InmuebleController {
         inmueble.setPrecioNoche(precioNoche);
         inmueble.setCapacidad(capacidad);
         inmueble.setImagenUrl(imagenUrl);
+        inmueble.setLatitud(latitud);
+        inmueble.setLongitud(longitud);
         Inmueble guardado = inmuebleService.guardar(inmueble);
         return "redirect:/propietarios/" + usuarioId + "?mensaje=" + codificar("Inmueble \"" + guardado.getTitulo() + "\" publicado");
     }
@@ -94,6 +98,8 @@ public class InmuebleController {
                           @RequestParam(defaultValue = "Colombia") String pais,
                           @RequestParam BigDecimal precioNoche, @RequestParam Integer capacidad,
                           @RequestParam(required = false) String imagenUrl,
+                          @RequestParam(required = false) Double latitud,
+                          @RequestParam(required = false) Double longitud,
                           HttpSession session) {
         Inmueble inmueble = inmuebleService.obtener(id);
         if (!esDuenoDe(inmueble, session)) {
@@ -107,6 +113,8 @@ public class InmuebleController {
         inmueble.setPrecioNoche(precioNoche);
         inmueble.setCapacidad(capacidad);
         inmueble.setImagenUrl(imagenUrl);
+        inmueble.setLatitud(latitud);
+        inmueble.setLongitud(longitud);
         inmuebleService.guardar(inmueble);
         return "redirect:/propietarios/" + inmueble.getPropietario().getId() + "?mensaje=" + codificar("Inmueble actualizado");
     }

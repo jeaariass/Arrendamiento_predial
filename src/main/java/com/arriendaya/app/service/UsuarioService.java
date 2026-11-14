@@ -77,4 +77,21 @@ public class UsuarioService {
         return clienteRepository.findById(usuario.getId())
                 .orElseGet(() -> clienteRepository.save(new Cliente(usuario)));
     }
+
+    @Transactional
+    public Usuario actualizarPerfil(Usuario usuario, String nombre, String apellido, String telefono) {
+        usuario.setNombre(nombre);
+        usuario.setApellido(apellido);
+        usuario.setTelefono(telefono);
+        return usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public void cambiarPassword(Usuario usuario, String actual, String nueva) {
+        if (!passwordEncoder.matches(actual, usuario.getPasswordHash())) {
+            throw new IllegalArgumentException("La contrasena actual no es correcta");
+        }
+        usuario.setPasswordHash(passwordEncoder.encode(nueva));
+        usuarioRepository.save(usuario);
+    }
 }

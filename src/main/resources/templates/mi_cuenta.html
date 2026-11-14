@@ -5,6 +5,9 @@
     <title>Mi cuenta &mdash; arriendaya</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 </head>
 <body>
 
@@ -12,75 +15,92 @@
 
 <section class="seccion">
     <div class="contenedor" style="max-width: 720px;">
-        <h2 style="margin-top: 0;">Mi cuenta</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin-top: 0;">Mi cuenta</h2>
+            <a href="/mi-cuenta/ajustes">Editar mi informacion &rarr;</a>
+        </div>
 
         <div class="exito-mensaje" th:if="${mensaje}" th:text="${mensaje}"></div>
         <div class="error-mensaje" th:if="${error}" th:text="${error}"></div>
 
-        <div class="panel-formulario" style="margin: 0 0 24px;">
-            <h1 style="font-size: 18px;">Lo que debes ahora</h1>
+        <div class="tarjeta-contenido">
+            <h1>Lo que debes ahora</h1>
             <p style="font-size: 28px; font-weight: 800; margin: 4px 0 0;"
                th:text="'$' + ${#numbers.formatInteger(deuda, 0, 'POINT')} + ' COP'"></p>
-            <p class="ayuda" style="margin-top: 4px;">Suma de reservas pendientes o confirmadas. Si cancelas una, se descuenta de aqui.</p>
-        </div>
-
-        <div class="panel-formulario" style="margin: 0 0 24px;">
-            <h1 style="font-size: 18px;">Informacion bancaria</h1>
-            <form th:action="@{/mi-cuenta/banco}" method="post">
-                <div class="campo-form">
-                    <label>Cuenta bancaria</label>
-                    <input type="text" name="cuentaBancaria" maxlength="40"
-                           th:value="${cliente.cuentaBancaria}" placeholder="Banco y numero de cuenta">
-                </div>
-                <button type="submit">Guardar</button>
-            </form>
+            <p class="ayuda" style="margin-top: 4px;">Suma de reservas pendientes. Si cancelas una, se descuenta de aqui.</p>
         </div>
 
         <h1 style="font-size: 18px;">Mis reservas</h1>
-        <table class="tabla-admin" th:if="${not #lists.isEmpty(reservas)}">
-            <thead>
-                <tr>
-                    <th>Alojamiento</th>
-                    <th>Fechas</th>
-                    <th>Valor</th>
-                    <th>Estado</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="r : ${reservas}">
-                    <td>
-                        <a th:href="@{/inmuebles/{id}(id=${r.inmueble.id})}" th:text="${r.inmueble.titulo}"></a>
-                    </td>
-                    <td th:text="${r.fechaInicio} + ' a ' + ${r.fechaFin}"></td>
-                    <td th:text="'$' + ${#numbers.formatInteger(r.valorTotal, 0, 'POINT')}"></td>
-                    <td th:text="${r.estado}"></td>
-                    <td style="display:flex; flex-direction:column; gap:6px;">
-                        <details th:if="${r.estado.name() == 'PENDIENTE'}">
-                            <summary style="cursor: pointer;">Pagar</summary>
-                            <form th:action="@{/mi-cuenta/reservas/{id}/pagar(id=${r.id})}" method="post"
-                                  style="display:flex; flex-direction:column; gap:6px; min-width:180px; margin-top:6px;">
-                                <select name="bancoId" required>
-                                    <option value="" disabled selected>Banco</option>
-                                    <option th:each="b : ${bancos}" th:value="${b.id}" th:text="${b.nombre}"></option>
-                                </select>
-                                <select name="metodoPago" required>
-                                    <option value="" disabled selected>Metodo</option>
-                                    <option value="TRANSFERENCIA">Transferencia</option>
-                                    <option value="TARJETA">Tarjeta</option>
-                                    <option value="PSE">PSE</option>
-                                </select>
-                                <button type="submit">Confirmar pago</button>
-                            </form>
-                        </details>
-                        <form th:if="${r.estado.name() == 'PENDIENTE' or r.estado.name() == 'CONFIRMADA'}"
-                              th:action="@{/mi-cuenta/reservas/{id}/cancelar(id=${r.id})}" method="post">
-                            <button type="submit">Cancelar</button>
+
+        <div th:each="r : ${reservas}" class="tarjeta-contenido" style="margin-bottom:16px;">
+            <details th:attr="ontoggle=${r.inmueble.latitud != null and r.inmueble.longitud != null} ? |if(this.open) iniciarMapaCercano('mapa-r${r.id}','lista-r${r.id}',${r.inmueble.latitud},${r.inmueble.longitud},${r.inmueble.id});| : ''">
+                <summary style="cursor:pointer; list-style:none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <div>
+                            <strong th:text="${r.inmueble.titulo}"></strong>
+                            <div class="ayuda" style="margin:2px 0 0;" th:text="${r.fechaInicio} + ' a ' + ${r.fechaFin}"></div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-weight:800;" th:text="'$' + ${#numbers.formatInteger(r.valorTotal, 0, 'POINT')}"></div>
+                            <span th:if="${r.estado.name() == 'PENDIENTE'}" class="badge-ocupado" th:text="${r.estado}"></span>
+                            <span th:unless="${r.estado.name() == 'PENDIENTE'}" class="badge-libre" th:text="${r.estado}"></span>
+                        </div>
+                    </div>
+                </summary>
+
+                <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--borde);">
+                    <p style="margin-top:0;">
+                        <span th:text="${r.inmueble.ubicacion.ciudad} + ' - ' + ${r.inmueble.direccion}"></span> &middot;
+                        <span th:text="${r.inmueble.tipo}"></span> &middot;
+                        <span th:text="${r.inmueble.capacidad} + ' huespedes'"></span> &middot;
+                        <a th:href="@{/inmuebles/{id}(id=${r.inmueble.id})}">Ver inmueble &rarr;</a>
+                    </p>
+
+                    <div th:if="${pagoPorReserva.get(r.id) != null}" class="exito-mensaje" style="margin-bottom:14px;">
+                        <strong>Pagada</strong><br>
+                        <span th:text="'Banco: ' + ${pagoPorReserva.get(r.id).banco.nombre}"></span><br>
+                        <span th:text="'Metodo: ' + ${pagoPorReserva.get(r.id).metodoPago}"></span><br>
+                        <span th:if="${pagoPorReserva.get(r.id).referencia != null}" th:text="'Tarjeta: ' + ${pagoPorReserva.get(r.id).referencia}"></span><br th:if="${pagoPorReserva.get(r.id).referencia != null}">
+                        <span th:text="'Fecha: ' + ${pagoPorReserva.get(r.id).fechaPago}"></span>
+                    </div>
+
+                    <details th:if="${r.estado.name() == 'PENDIENTE'}" style="margin-bottom:12px;">
+                        <summary style="cursor: pointer;">Pagar</summary>
+                        <form th:action="@{/mi-cuenta/reservas/{id}/pagar(id=${r.id})}" method="post"
+                              style="display:flex; flex-direction:column; gap:8px; max-width:320px; margin-top:8px;">
+                            <select name="bancoId" required>
+                                <option value="" disabled selected>Banco</option>
+                                <option th:each="b : ${bancos}" th:value="${b.id}" th:text="${b.nombre}"></option>
+                            </select>
+                            <select name="metodoPago" required
+                                    th:attr="onchange=|document.getElementById('tarjeta-${r.id}').style.display = this.value === 'TARJETA' ? 'block' : 'none';|">
+                                <option value="" disabled selected>Metodo</option>
+                                <option value="TRANSFERENCIA">Transferencia</option>
+                                <option value="TARJETA">Tarjeta</option>
+                                <option value="PSE">PSE</option>
+                            </select>
+                            <div th:id="'tarjeta-' + ${r.id}" style="display:none;">
+                                <input type="text" name="referencia" maxlength="30" placeholder="Numero de tarjeta">
+                            </div>
+                            <button type="submit" class="boton-ancho">Confirmar pago</button>
                         </form>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                    </details>
+                    <form th:if="${r.estado.name() == 'PENDIENTE' or r.estado.name() == 'CONFIRMADA'}"
+                          th:action="@{/mi-cuenta/reservas/{id}/cancelar(id=${r.id})}" method="post" style="display:inline;">
+                        <button type="submit">Cancelar reserva</button>
+                    </form>
+
+                    <div th:if="${r.inmueble.latitud != null and r.inmueble.longitud != null}" style="margin-top:20px;">
+                        <h1 style="font-size:14px;">Inmuebles cercanos (por si quieres cambiar de opcion)</h1>
+                        <div class="mapa-layout" style="margin-top:6px;">
+                            <div th:id="'mapa-r' + ${r.id}" class="mapa-contenedor" style="height:260px;"></div>
+                            <div th:id="'lista-r' + ${r.id}" class="lista-mapa" style="height:260px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </details>
+        </div>
+
         <div class="vacio" th:if="${#lists.isEmpty(reservas)}">
             Aun no tienes reservas.
         </div>
@@ -88,6 +108,10 @@
 </section>
 
 <div th:replace="~{fragments/layout :: footer}"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script th:src="@{/js/mapa-cercanos.js}"></script>
 
 </body>
 </html>

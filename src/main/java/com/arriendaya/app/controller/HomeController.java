@@ -47,6 +47,16 @@ public class HomeController {
         return inmuebleService.puntosEnMapa(minLat, maxLat, minLon, maxLon, ciudad, llegada, salida);
     }
 
+    @GetMapping("/mapa/cercanos")
+    @ResponseBody
+    public List<PuntoMapa> puntosCercanos(
+            @RequestParam double lat,
+            @RequestParam double lon,
+            @RequestParam(defaultValue = "-1") Long excluir,
+            @RequestParam(defaultValue = "50") int limite) {
+        return inmuebleService.puntosCercanos(excluir, lat, lon, limite);
+    }
+
     @GetMapping("/buscar")
     public String buscar(
             @RequestParam(required = false) String ciudad,

@@ -45,4 +45,7 @@ public class Pago {
 
     @Column(name = "fecha_validacion")
     private LocalDateTime fechaValidacion;
+
+    @Column(length = 100)
+    private String referencia;
 }

@@ -69,6 +69,47 @@ nav.sitio a:hover:not(.boton-primario) {
     background: rgba(255, 255, 255, 0.12);
 }
 
+.nav-toggle,
+.nav-burger {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .nav-burger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        font-size: 22px;
+        color: var(--blanco);
+        cursor: pointer;
+        order: 3;
+    }
+
+    header.sitio .contenedor {
+        flex-wrap: wrap;
+    }
+
+    nav.sitio {
+        flex-basis: 100%;
+        order: 4;
+        display: none;
+        flex-direction: column;
+        gap: 6px;
+        padding-top: 12px;
+    }
+
+    nav.sitio a,
+    nav.sitio span {
+        margin-left: 0;
+    }
+
+    .nav-toggle:checked ~ nav.sitio {
+        display: flex;
+    }
+}
+
 /* ===== Hero + buscador ===== */
 .hero {
     background: linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-claro) 100%);
@@ -327,7 +368,57 @@ nav.sitio a:hover:not(.boton-primario) {
 
 .boton-reservar:hover { background: #005999; }
 
-/* ===== Formularios (login/registro) ===== */
+/* ===== Campos de formulario (usables en cualquier contenedor) ===== */
+.campo-form {
+    margin-bottom: 14px;
+}
+
+.campo-form label,
+.panel-formulario label,
+.tarjeta-contenido label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.campo-form input,
+.campo-form select,
+.campo-form textarea,
+.panel-formulario input,
+.tarjeta-contenido input,
+.tarjeta-contenido select,
+.tarjeta-contenido textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.checkboxes {
+    display: flex;
+    gap: 18px;
+    font-size: 14px;
+    margin-bottom: 18px;
+}
+
+.boton-ancho {
+    width: 100%;
+    background: #0071c2;
+    color: var(--blanco);
+    border: none;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.boton-ancho:hover { background: #005999; }
+
+/* ===== Caja chica centrada: solo login/registro ===== */
 .panel-formulario {
     max-width: 440px;
     margin: 50px auto;
@@ -342,32 +433,6 @@ nav.sitio a:hover:not(.boton-primario) {
     margin-top: 0;
 }
 
-.panel-formulario .campo-form {
-    margin-bottom: 14px;
-}
-
-.panel-formulario label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-
-.panel-formulario input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--borde);
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-.panel-formulario .checkboxes {
-    display: flex;
-    gap: 18px;
-    font-size: 14px;
-    margin-bottom: 18px;
-}
-
 .panel-formulario button {
     width: 100%;
     background: #0071c2;
@@ -379,6 +444,36 @@ nav.sitio a:hover:not(.boton-primario) {
     font-weight: 700;
     cursor: pointer;
 }
+
+.panel-formulario button:hover { background: #005999; }
+
+/* ===== Tarjeta de contenido: ancho completo, para paginas normales ===== */
+.tarjeta-contenido {
+    background: var(--blanco);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.tarjeta-contenido h1 {
+    font-size: 18px;
+    margin-top: 0;
+}
+
+.tarjeta-contenido button,
+.tarjeta-contenido .boton-ancho {
+    background: #0071c2;
+    color: var(--blanco);
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.tarjeta-contenido button:hover { background: #005999; }
 
 .error-mensaje {
     background: #fdecea;
@@ -521,6 +616,10 @@ nav.sitio a:hover:not(.boton-primario) {
 }
 
 /* ===== Panel admin ===== */
+.tabla-admin-wrap {
+    overflow-x: auto;
+}
+
 .tabla-admin {
     width: 100%;
     border-collapse: collapse;

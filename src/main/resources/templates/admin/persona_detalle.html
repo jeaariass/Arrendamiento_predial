@@ -20,7 +20,8 @@
             <h1 style="font-size: 18px;">Reservas como cliente</h1>
             <p style="font-size: 22px; font-weight: 800;"
                th:text="'Debe: $' + ${#numbers.formatInteger(deuda, 0, 'POINT')} + ' COP'"></p>
-            <table class="tabla-admin" th:if="${not #lists.isEmpty(reservas)}">
+            <div class="tabla-admin-wrap" th:if="${not #lists.isEmpty(reservas)}">
+            <table class="tabla-admin">
                 <thead>
                     <tr><th>Alojamiento</th><th>Fechas</th><th>Valor</th><th>Estado</th></tr>
                 </thead>
@@ -33,12 +34,14 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
             <div class="vacio" th:if="${#lists.isEmpty(reservas)}">No tiene reservas.</div>
         </div>
 
         <div th:if="${inmuebles != null}">
             <h1 style="font-size: 18px;">Alojamientos como propietario</h1>
-            <table class="tabla-admin" th:if="${not #lists.isEmpty(inmuebles)}">
+            <div class="tabla-admin-wrap" th:if="${not #lists.isEmpty(inmuebles)}">
+            <table class="tabla-admin">
                 <thead>
                     <tr><th>Alojamiento</th><th>Ciudad</th><th>Estado</th><th>Reservado por</th><th>Fechas</th></tr>
                 </thead>
@@ -55,6 +58,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
             <div class="vacio" th:if="${#lists.isEmpty(inmuebles)}">No tiene alojamientos publicados.</div>
         </div>
 

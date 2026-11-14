@@ -2,6 +2,7 @@ package com.arriendaya.app.controller;
 
 import com.arriendaya.app.dto.EstadoOcupacion;
 import com.arriendaya.app.dto.InmuebleConReserva;
+import com.arriendaya.app.model.EstadoReserva;
 import com.arriendaya.app.model.Inmueble;
 import com.arriendaya.app.service.AdminService;
 import com.arriendaya.app.service.InmuebleService;
@@ -121,6 +122,16 @@ public class AdminController {
             model.addAttribute("inmuebles", inmuebles);
         }
         return "admin/persona_detalle";
+    }
+
+    @GetMapping("/reservas")
+    public String reservas(@RequestParam(required = false) EstadoReserva estado, HttpSession session, Model model) {
+        if (!Boolean.TRUE.equals(session.getAttribute("esAdmin"))) {
+            return "redirect:/login";
+        }
+        model.addAttribute("estado", estado);
+        model.addAttribute("reservas", reservaService.paraAdmin(estado));
+        return "admin/reservas";
     }
 
     @PostMapping("/asignar")

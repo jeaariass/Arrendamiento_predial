@@ -20,7 +20,8 @@
             <button type="submit">Buscar</button>
         </form>
 
-        <table class="tabla-admin" th:if="${resultados != null and not #lists.isEmpty(resultados)}">
+        <div class="tabla-admin-wrap" th:if="${resultados != null and not #lists.isEmpty(resultados)}">
+        <table class="tabla-admin">
             <thead>
                 <tr>
                     <th>Nombre</th>
@@ -45,6 +46,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
         <div class="vacio" th:if="${q != null and not #strings.isEmpty(q) and (resultados == null or #lists.isEmpty(resultados))}">
             No se encontro ninguna persona con "<span th:text="${q}"></span>".
         </div>

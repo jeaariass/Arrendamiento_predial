@@ -14,27 +14,31 @@
 <section class="seccion">
     <div class="contenedor">
         <h2>Panel de administracion</h2>
-        <p><a href="/admin/personas">Buscar persona &rarr;</a></p>
+        <p>
+            <a href="/admin/personas">Buscar persona &rarr;</a>
+            &nbsp;|&nbsp;
+            <a href="/admin/reservas">Ver reservas &rarr;</a>
+        </p>
         <p class="ayuda" th:text="${totalInmuebles} + ' alojamientos en total. Ocupado = tiene una reserva pendiente o confirmada que cubre hoy.'"></p>
 
         <div class="exito-mensaje" th:if="${mensaje}" th:text="${mensaje}"></div>
         <div class="error-mensaje" th:if="${error}" th:text="${error}"></div>
 
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-bottom: 24px;">
-            <div class="panel-formulario" style="margin:0;">
+            <div class="tarjeta-contenido" style="margin:0;">
                 <div class="ayuda">Inmuebles totales</div>
                 <div style="font-size: 26px; font-weight: 800;" th:text="${resumen.totalInmuebles}"></div>
             </div>
-            <div class="panel-formulario" style="margin:0;">
+            <a class="tarjeta-contenido" href="/admin/reservas" style="margin:0; display:block;">
                 <div class="ayuda">Reservas activas</div>
                 <div style="font-size: 26px; font-weight: 800;" th:text="${resumen.reservasActivas}"></div>
-            </div>
-            <div class="panel-formulario" style="margin:0;">
+            </a>
+            <div class="tarjeta-contenido" style="margin:0;">
                 <div class="ayuda">Deuda pendiente</div>
                 <div style="font-size: 22px; font-weight: 800;"
                      th:text="'$' + ${#numbers.formatInteger(resumen.deudaPendiente, 0, 'POINT')}"></div>
             </div>
-            <div class="panel-formulario" style="margin:0;">
+            <div class="tarjeta-contenido" style="margin:0;">
                 <div class="ayuda">Total pagado</div>
                 <div style="font-size: 22px; font-weight: 800;"
                      th:text="'$' + ${#numbers.formatInteger(resumen.totalPagado, 0, 'POINT')}"></div>
@@ -50,7 +54,8 @@
             <summary style="cursor: pointer; font-weight: 700; font-size: 13px;">
                 Arrendadores demo (usuario / clave) &mdash; <span th:text="${#lists.size(arrendadores)}"></span> cuentas
             </summary>
-            <table class="tabla-admin" th:if="${not #lists.isEmpty(arrendadores)}" style="margin-top: 10px;">
+            <div class="tabla-admin-wrap" th:if="${not #lists.isEmpty(arrendadores)}">
+            <table class="tabla-admin" style="margin-top: 10px;">
                 <thead><tr><th>Usuario</th><th>Clave</th></tr></thead>
                 <tbody>
                     <tr th:each="c : ${arrendadores}">
@@ -59,6 +64,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
             <p class="ayuda" th:if="${#lists.isEmpty(arrendadores)}">
                 SEED_DEMO_USERS esta en false: no hay claves publicas de demo en este servidor.
             </p>
@@ -83,6 +89,7 @@
             </select>
         </form>
 
+        <div class="tabla-admin-wrap">
         <table class="tabla-admin">
             <thead>
                 <tr>
@@ -134,6 +141,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
 
         <div class="paginacion" th:if="${totalPaginas > 1}" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
             <a th:if="${pagina > 0}" th:href="@{/admin(ciudad=${ciudad}, estado=${estado}, pagina=${pagina - 1})}" class="pagina-link">&laquo; Anterior</a>
@@ -177,7 +185,8 @@
         .then(function (puntos) {
             var datos = puntos.map(function (p) { return [p.lat, p.lon, p.intensidad]; });
             if (datos.length > 0) {
-                L.heatLayer(datos, { radius: 20, blur: 18, maxZoom: 12 }).addTo(mapaCalor);
+                L.heatLayer(datos, { radius: 25, blur: 20, maxZoom: 14 }).addTo(mapaCalor);
+                mapaCalor.fitBounds(datos.map(function (d) { return [d[0], d[1]]; }), { padding: [40, 40], maxZoom: 14 });
             }
         });
 </script>

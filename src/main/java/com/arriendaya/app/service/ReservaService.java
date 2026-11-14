@@ -111,6 +111,11 @@ public class ReservaService {
         return reservaRepository.existsByInmuebleId(inmuebleId);
     }
 
+    /** Todas las reservas para el admin, opcionalmente filtradas por estado (null = todas). */
+    public List<Reserva> paraAdmin(EstadoReserva estado) {
+        return reservaRepository.paraAdmin(estado);
+    }
+
     @Transactional
     public Reserva cambiarEstado(Long reservaId, EstadoReserva estado) {
         Reserva reserva = reservaRepository.findById(reservaId)

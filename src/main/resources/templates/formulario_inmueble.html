@@ -14,7 +14,7 @@
     <div class="contenedor" style="max-width: 640px;">
         <h2 style="margin-top: 0;" th:text="${titulo}"></h2>
 
-        <div class="panel-formulario">
+        <div class="tarjeta-contenido">
             <form th:action="${accion}" method="post">
                 <div class="campo-form">
                     <label>Titulo</label>
@@ -58,7 +58,18 @@
                     <input type="url" name="imagenUrl" maxlength="300" th:value="${inmueble.imagenUrl}"
                            placeholder="https://...">
                 </div>
-                <button type="submit" th:text="${titulo}"></button>
+                <div class="campo-form">
+                    <label>Latitud (opcional)</label>
+                    <input type="number" step="any" name="latitud" th:value="${inmueble.latitud}"
+                           placeholder="ej: 4.6097, copialo desde Google Maps">
+                </div>
+                <div class="campo-form">
+                    <label>Longitud (opcional)</label>
+                    <input type="number" step="any" name="longitud" th:value="${inmueble.longitud}"
+                           placeholder="ej: -74.0817">
+                </div>
+                <p class="ayuda" style="margin-top:-8px;">Sin latitud/longitud el inmueble no aparece en los mapas, pero igual se puede buscar y reservar.</p>
+                <button type="submit" th:text="${titulo}" class="boton-ancho"></button>
             </form>
         </div>
     </div>

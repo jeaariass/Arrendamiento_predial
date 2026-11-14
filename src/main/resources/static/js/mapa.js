@@ -67,7 +67,7 @@
                 var item = document.createElement("div");
                 item.className = "item-foto";
                 item.innerHTML =
-                    '<img src="' + (p.imagenUrl || "") + '" alt="' + p.titulo + '">' +
+                    '<img src="' + (p.imagenUrl || "/img/sin-imagen.svg") + '" alt="' + p.titulo + '">' +
                     '<div class="info"><h4>' + p.titulo + "</h4>" +
                     '<div class="precio">' + formatearPrecio(p.precioNoche) + "</div></div>";
                 item.addEventListener("click", function () {

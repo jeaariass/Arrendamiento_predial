@@ -100,4 +100,24 @@ public class InmuebleService {
                 .map(i -> new PuntoMapa(i.getId(), i.getTitulo(), i.getPrecioNoche(), i.getLatitud(), i.getLongitud(), i.getImagenUrl()))
                 .toList();
     }
+
+    /** Los `limite` inmuebles mas cercanos a (lat, lon) por distancia real, sin importar la ciudad. */
+    public List<PuntoMapa> puntosCercanos(Long excluirId, double lat, double lon, int limite) {
+        double delta = 3.0;
+        List<Inmueble> candidatos = inmuebleRepository.candidatosCercanos(
+                lat - delta, lat + delta, lon - delta, lon + delta, excluirId);
+
+        double coslat = Math.cos(Math.toRadians(lat));
+        Comparator<Inmueble> porDistancia = Comparator.comparingDouble(i -> {
+            double dx = (i.getLongitud() - lon) * coslat;
+            double dy = i.getLatitud() - lat;
+            return dx * dx + dy * dy;
+        });
+
+        return candidatos.stream()
+                .sorted(porDistancia)
+                .limit(limite)
+                .map(i -> new PuntoMapa(i.getId(), i.getTitulo(), i.getPrecioNoche(), i.getLatitud(), i.getLongitud(), i.getImagenUrl()))
+                .toList();
+    }
 }

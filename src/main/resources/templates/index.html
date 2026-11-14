@@ -48,7 +48,7 @@
 
         <div class="grid-propiedades" th:if="${not #lists.isEmpty(destacados)}">
             <a class="tarjeta" th:each="i : ${destacados}" th:href="@{/inmuebles/{id}(id=${i.id})}">
-                <img th:src="${i.imagenUrl}" th:alt="${i.titulo}">
+                <img th:src="${#strings.isEmpty(i.imagenUrl)} ? @{/img/sin-imagen.svg} : ${i.imagenUrl}" th:alt="${i.titulo}">
                 <div class="cuerpo">
                     <span class="tipo" th:text="${i.tipo}"></span>
                     <h3 th:text="${i.titulo}"></h3>

@@ -70,6 +70,20 @@ public interface InmuebleRepository extends JpaRepository<Inmueble, Long> {
 
     @Query("""
         select i from Inmueble i
+        where i.estado = 'DISPONIBLE'
+          and i.latitud is not null and i.longitud is not null
+          and i.latitud between :minLat and :maxLat
+          and i.longitud between :minLon and :maxLon
+          and i.id <> :excluirId
+        """)
+    List<Inmueble> candidatosCercanos(@Param("minLat") double minLat,
+                                       @Param("maxLat") double maxLat,
+                                       @Param("minLon") double minLon,
+                                       @Param("maxLon") double maxLon,
+                                       @Param("excluirId") Long excluirId);
+
+    @Query("""
+        select i from Inmueble i
         join i.ubicacion u
         where (:ciudad = '' or lower(u.ciudad) like lower(concat('%', :ciudad, '%')))
           and (
