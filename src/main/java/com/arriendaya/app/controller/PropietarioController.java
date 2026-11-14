@@ -34,11 +34,15 @@ public class PropietarioController {
                 .map(i -> new InmuebleConReserva(i, reservaService.proximaReservaPorInmueble(i.getId())))
                 .toList();
 
+        boolean esPropio = id.equals(session.getAttribute("usuarioId"));
         model.addAttribute("propietario", propietario);
         model.addAttribute("inmuebles", inmuebles);
-        model.addAttribute("esPropio", id.equals(session.getAttribute("usuarioId")));
+        model.addAttribute("esPropio", esPropio);
         model.addAttribute("mensaje", mensaje);
         model.addAttribute("error", error);
+        if (esPropio) {
+            model.addAttribute("historialReservas", reservaService.deInmueblesDePropietario(id));
+        }
         return "perfil_propietario";
     }
 }

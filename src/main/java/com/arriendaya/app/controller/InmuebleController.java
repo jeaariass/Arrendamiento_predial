@@ -58,6 +58,7 @@ public class InmuebleController {
         Usuario usuario = usuarioService.porId(usuarioId)
                 .orElseThrow(() -> new IllegalStateException("Usuario invalido"));
         var propietario = usuarioService.convertirEnPropietario(usuario);
+        session.setAttribute("esPropietario", true);
 
         Inmueble inmueble = new Inmueble();
         inmueble.setPropietario(propietario);
@@ -147,6 +148,7 @@ public class InmuebleController {
             model.addAttribute("noches", java.time.temporal.ChronoUnit.DAYS.between(llegada, salida));
             model.addAttribute("valorTotal", valorTotal);
             model.addAttribute("autenticado", session.getAttribute("usuarioId") != null);
+            model.addAttribute("urlPreview", "/inmuebles/" + id + "/reservar/preview?llegada=" + llegada + "&salida=" + salida);
             return "reserva_confirmar";
         } catch (IllegalArgumentException ex) {
             model.addAttribute("inmueble", inmueble);

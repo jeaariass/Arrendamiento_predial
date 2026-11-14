@@ -29,9 +29,8 @@
         <div th:unless="${autenticado}" class="panel-formulario" style="margin-top: 10px;">
             <p style="margin-top: 0;">Crea una cuenta o inicia sesion para confirmar esta reserva. No perderas el inmueble ni las fechas que elegiste.</p>
             <div style="display:flex; gap:10px;">
-                <a class="boton-primario"
-                   th:href="@{/registro(redirect=@{/inmuebles/{id}/reservar/preview(id=${inmueble.id},llegada=${llegada},salida=${salida})})}">Crear cuenta</a>
-                <a th:href="@{/login(redirect=@{/inmuebles/{id}/reservar/preview(id=${inmueble.id},llegada=${llegada},salida=${salida})})}">Ya tengo cuenta, iniciar sesion</a>
+                <a class="boton-primario" th:href="@{/registro(redirect=${urlPreview})}">Crear cuenta</a>
+                <a th:href="@{/login(redirect=${urlPreview})}">Ya tengo cuenta, iniciar sesion</a>
             </div>
         </div>
         <p style="margin-top: 14px;"><a th:href="@{/inmuebles/{id}(id=${inmueble.id})}">&larr; Cambiar fechas</a></p>
