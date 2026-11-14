@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Buscar persona &mdash; arriendaya</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: header}"></div>
+
+<section class="seccion">
+    <div class="contenedor">
+        <h2>Buscar persona</h2>
+        <p class="ayuda">Busca por nombre, apellido o correo para ver sus reservas (como cliente) y sus alojamientos (como propietario).</p>
+
+        <form method="get" action="/admin/personas" style="display:flex; gap:10px; margin-bottom: 20px;">
+            <input type="text" name="q" th:value="${q}" placeholder="nombre, apellido o correo" style="flex:1;">
+            <button type="submit">Buscar</button>
+        </form>
+
+        <table class="tabla-admin" th:if="${resultados != null and not #lists.isEmpty(resultados)}">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Roles</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="r : ${resultados}">
+                    <td th:text="${r.usuario.nombre} + ' ' + ${r.usuario.apellido}"></td>
+                    <td th:text="${r.usuario.email}"></td>
+                    <td>
+                        <span th:if="${r.esCliente}">Cliente</span>
+                        <span th:if="${r.esCliente and r.esPropietario}">, </span>
+                        <span th:if="${r.esPropietario}">Propietario</span>
+                        <span th:if="${not r.esCliente and not r.esPropietario}">&mdash;</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/admin/personas/{id}(id=${r.usuario.id})}">Ver</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="vacio" th:if="${q != null and not #strings.isEmpty(q) and (resultados == null or #lists.isEmpty(resultados))}">
+            No se encontro ninguna persona con "<span th:text="${q}"></span>".
+        </div>
+    </div>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

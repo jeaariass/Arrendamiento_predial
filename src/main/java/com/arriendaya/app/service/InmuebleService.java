@@ -2,12 +2,15 @@ package com.arriendaya.app.service;
 
 import com.arriendaya.app.dto.PuntoMapa;
 import com.arriendaya.app.model.Inmueble;
+import com.arriendaya.app.model.TipoInmueble;
+import com.arriendaya.app.model.Ubicacion;
 import com.arriendaya.app.repository.InmuebleRepository;
 import com.arriendaya.app.repository.UbicacionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -21,12 +24,21 @@ public class InmuebleService {
     private final InmuebleRepository inmuebleRepository;
     private final UbicacionRepository ubicacionRepository;
 
-    public List<Inmueble> buscar(String ciudad, Integer capacidad, LocalDate fechaInicio, LocalDate fechaFin) {
-        return inmuebleRepository.buscar(
+    public List<Inmueble> buscar(String ciudad, Integer capacidad, LocalDate fechaInicio, LocalDate fechaFin,
+                                  TipoInmueble tipo, String orden) {
+        List<Inmueble> resultados = inmuebleRepository.buscar(
                 normalizarCiudad(ciudad),
                 capacidad,
                 fechaInicio,
-                fechaFin);
+                fechaFin,
+                tipo);
+        if ("precio_asc".equals(orden)) {
+            return resultados.stream().sorted(Comparator.comparing(Inmueble::getPrecioNoche)).toList();
+        }
+        if ("precio_desc".equals(orden)) {
+            return resultados.stream().sorted(Comparator.comparing(Inmueble::getPrecioNoche).reversed()).toList();
+        }
+        return resultados;
     }
 
     private String normalizarCiudad(String ciudad) {
@@ -48,6 +60,20 @@ public class InmuebleService {
 
     public Inmueble guardar(Inmueble inmueble) {
         return inmuebleRepository.save(inmueble);
+    }
+
+    public void eliminar(Long id) {
+        inmuebleRepository.deleteById(id);
+    }
+
+    public Ubicacion obtenerOCrearUbicacion(String ciudad, String pais) {
+        return ubicacionRepository.findByCiudadIgnoreCaseAndPaisIgnoreCase(ciudad.trim(), pais.trim())
+                .orElseGet(() -> {
+                    Ubicacion u = new Ubicacion();
+                    u.setCiudad(ciudad.trim());
+                    u.setPais(pais.trim());
+                    return ubicacionRepository.save(u);
+                });
     }
 
     public List<String> ciudadesTop() {

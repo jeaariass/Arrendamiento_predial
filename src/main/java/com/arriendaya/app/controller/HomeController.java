@@ -2,6 +2,7 @@ package com.arriendaya.app.controller;
 
 import com.arriendaya.app.dto.PuntoMapa;
 import com.arriendaya.app.model.Inmueble;
+import com.arriendaya.app.model.TipoInmueble;
 import com.arriendaya.app.service.InmuebleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -52,9 +53,11 @@ public class HomeController {
             @RequestParam(required = false) Integer huespedes,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate llegada,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate salida,
+            @RequestParam(required = false) TipoInmueble tipo,
+            @RequestParam(required = false) String orden,
             Model model) {
 
-        List<Inmueble> resultados = inmuebleService.buscar(ciudad, huespedes, llegada, salida);
+        List<Inmueble> resultados = inmuebleService.buscar(ciudad, huespedes, llegada, salida, tipo, orden);
 
         model.addAttribute("resultados", resultados);
         model.addAttribute("ciudadesTop", inmuebleService.ciudadesTop());
@@ -62,6 +65,9 @@ public class HomeController {
         model.addAttribute("huespedes", huespedes);
         model.addAttribute("llegada", llegada);
         model.addAttribute("salida", salida);
+        model.addAttribute("tipo", tipo);
+        model.addAttribute("tipos", TipoInmueble.values());
+        model.addAttribute("orden", orden);
         return "resultados";
     }
 }

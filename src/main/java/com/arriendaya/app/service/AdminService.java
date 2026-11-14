@@ -3,11 +3,18 @@ package com.arriendaya.app.service;
 import com.arriendaya.app.config.PropietariosPoolSeeder;
 import com.arriendaya.app.dto.CredencialDemo;
 import com.arriendaya.app.dto.EstadoOcupacion;
+import com.arriendaya.app.dto.PersonaResumen;
+import com.arriendaya.app.dto.PuntoCalor;
 import com.arriendaya.app.dto.RangoFecha;
+import com.arriendaya.app.dto.ResumenAdmin;
 import com.arriendaya.app.model.Inmueble;
 import com.arriendaya.app.model.Reserva;
+import com.arriendaya.app.repository.ClienteRepository;
 import com.arriendaya.app.repository.InmuebleRepository;
+import com.arriendaya.app.repository.PagoRepository;
+import com.arriendaya.app.repository.PropietarioRepository;
 import com.arriendaya.app.repository.ReservaRepository;
+import com.arriendaya.app.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -27,6 +34,10 @@ public class AdminService {
 
     private final InmuebleRepository inmuebleRepository;
     private final ReservaRepository reservaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ClienteRepository clienteRepository;
+    private final PropietarioRepository propietarioRepository;
+    private final PagoRepository pagoRepository;
 
     @Value("${SEED_DEMO_USERS:true}")
     private boolean seedDemoUsers;
@@ -50,6 +61,32 @@ public class AdminService {
             lista.add(new CredencialDemo(PropietariosPoolSeeder.email(i), PropietariosPoolSeeder.claveDemo(i)));
         }
         return lista;
+    }
+
+    public List<PersonaResumen> buscarPersonas(String q) {
+        String query = (q == null) ? "" : q.trim();
+        if (query.isEmpty()) {
+            return List.of();
+        }
+        return usuarioRepository
+                .findByNombreContainingIgnoreCaseOrApellidoContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query, query)
+                .stream()
+                .map(u -> new PersonaResumen(u, clienteRepository.existsById(u.getId()), propietarioRepository.existsById(u.getId())))
+                .toList();
+    }
+
+    public ResumenAdmin resumen() {
+        return new ResumenAdmin(
+                inmuebleRepository.count(),
+                reservaRepository.contarActivas(),
+                reservaRepository.sumarDeudaPendiente(),
+                pagoRepository.sumarTotalPagado());
+    }
+
+    public List<PuntoCalor> puntosDeCalor() {
+        return inmuebleRepository.puntosDeReservasActivas().stream()
+                .map(fila -> new PuntoCalor((Double) fila[0], (Double) fila[1], (Long) fila[2]))
+                .toList();
     }
 
     public EstadoOcupacion calcularOcupacion(Inmueble inmueble) {

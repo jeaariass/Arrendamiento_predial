@@ -1,6 +1,7 @@
 package com.arriendaya.app.repository;
 
 import com.arriendaya.app.model.Inmueble;
+import com.arriendaya.app.model.TipoInmueble;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,6 +19,7 @@ public interface InmuebleRepository extends JpaRepository<Inmueble, Long> {
         join i.ubicacion u
         where (:ciudad = '' or lower(u.ciudad) like lower(concat('%', :ciudad, '%')))
           and (:capacidad is null or i.capacidad >= :capacidad)
+          and (:tipo is null or i.tipo = :tipo)
           and i.estado = 'DISPONIBLE'
           and i.id not in (
             select r.inmueble.id from Reserva r
@@ -30,7 +32,8 @@ public interface InmuebleRepository extends JpaRepository<Inmueble, Long> {
     List<Inmueble> buscar(@Param("ciudad") String ciudad,
                            @Param("capacidad") Integer capacidad,
                            @Param("fechaInicio") java.time.LocalDate fechaInicio,
-                           @Param("fechaFin") java.time.LocalDate fechaFin);
+                           @Param("fechaFin") java.time.LocalDate fechaFin,
+                           @Param("tipo") TipoInmueble tipo);
 
     List<Inmueble> findTop8ByEstadoOrderByIdDesc(String estado);
 
@@ -87,4 +90,13 @@ public interface InmuebleRepository extends JpaRepository<Inmueble, Long> {
     Page<Inmueble> paraAdmin(@Param("ciudad") String ciudad,
                              @Param("estadoFiltro") String estadoFiltro,
                              Pageable pageable);
+
+    @Query("""
+        select i.latitud, i.longitud, count(r)
+        from Inmueble i join Reserva r on r.inmueble = i
+        where r.estado in ('PENDIENTE', 'CONFIRMADA')
+          and i.latitud is not null and i.longitud is not null
+        group by i.id, i.latitud, i.longitud
+        """)
+    List<Object[]> puntosDeReservasActivas();
 }

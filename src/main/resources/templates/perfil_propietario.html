@@ -13,6 +13,9 @@
 <section class="seccion">
     <div class="contenedor">
 
+        <div class="exito-mensaje" th:if="${mensaje}" th:text="${mensaje}"></div>
+        <div class="error-mensaje" th:if="${error}" th:text="${error}"></div>
+
         <div class="perfil-propietario">
             <div class="avatar" th:text="${#strings.substring(propietario.usuario.nombre, 0, 1)}"></div>
             <div>
@@ -20,6 +23,10 @@
                 <div class="meta" th:text="'Propietario en arriendaya'"></div>
             </div>
         </div>
+
+        <p th:if="${esPropio}">
+            <a href="/inmuebles/nuevo" class="boton-primario">Publicar nuevo inmueble</a>
+        </p>
 
         <h2 th:text="${#lists.size(inmuebles)} + ' alojamientos publicados'"></h2>
 
@@ -33,6 +40,7 @@
                     <th>Reservado por</th>
                     <th>Fechas</th>
                     <th>Valor de la reserva</th>
+                    <th th:if="${esPropio}"></th>
                 </tr>
             </thead>
             <tbody>
@@ -49,6 +57,13 @@
                     <td th:text="${fila.reservaActual != null} ? (${fila.reservaActual.cliente.usuario.nombre} + ' ' + ${fila.reservaActual.cliente.usuario.apellido}) : '&mdash;'"></td>
                     <td th:text="${fila.reservaActual != null} ? (${fila.reservaActual.fechaInicio} + ' a ' + ${fila.reservaActual.fechaFin}) : '&mdash;'"></td>
                     <td th:text="${fila.reservaActual != null} ? ('$' + ${#numbers.formatInteger(fila.reservaActual.valorTotal, 0, 'POINT')}) : '&mdash;'"></td>
+                    <td th:if="${esPropio}" style="display:flex; gap:6px;">
+                        <a th:href="@{/inmuebles/{id}/editar(id=${fila.inmueble.id})}">Editar</a>
+                        <form th:action="@{/inmuebles/{id}/eliminar(id=${fila.inmueble.id})}" method="post"
+                              onsubmit="return confirm('Eliminar este inmueble?');">
+                            <button type="submit" style="color:#b00020;">Eliminar</button>
+                        </form>
+                    </td>
                 </tr>
             </tbody>
         </table>

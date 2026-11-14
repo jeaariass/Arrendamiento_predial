@@ -15,6 +15,7 @@
         <h2 style="margin-top: 0;">Mi cuenta</h2>
 
         <div class="exito-mensaje" th:if="${mensaje}" th:text="${mensaje}"></div>
+        <div class="error-mensaje" th:if="${error}" th:text="${error}"></div>
 
         <div class="panel-formulario" style="margin: 0 0 24px;">
             <h1 style="font-size: 18px;">Lo que debes ahora</h1>
@@ -54,7 +55,24 @@
                     <td th:text="${r.fechaInicio} + ' a ' + ${r.fechaFin}"></td>
                     <td th:text="'$' + ${#numbers.formatInteger(r.valorTotal, 0, 'POINT')}"></td>
                     <td th:text="${r.estado}"></td>
-                    <td>
+                    <td style="display:flex; flex-direction:column; gap:6px;">
+                        <details th:if="${r.estado.name() == 'PENDIENTE'}">
+                            <summary style="cursor: pointer;">Pagar</summary>
+                            <form th:action="@{/mi-cuenta/reservas/{id}/pagar(id=${r.id})}" method="post"
+                                  style="display:flex; flex-direction:column; gap:6px; min-width:180px; margin-top:6px;">
+                                <select name="bancoId" required>
+                                    <option value="" disabled selected>Banco</option>
+                                    <option th:each="b : ${bancos}" th:value="${b.id}" th:text="${b.nombre}"></option>
+                                </select>
+                                <select name="metodoPago" required>
+                                    <option value="" disabled selected>Metodo</option>
+                                    <option value="TRANSFERENCIA">Transferencia</option>
+                                    <option value="TARJETA">Tarjeta</option>
+                                    <option value="PSE">PSE</option>
+                                </select>
+                                <button type="submit">Confirmar pago</button>
+                            </form>
+                        </details>
                         <form th:if="${r.estado.name() == 'PENDIENTE' or r.estado.name() == 'CONFIRMADA'}"
                               th:action="@{/mi-cuenta/reservas/{id}/cancelar(id=${r.id})}" method="post">
                             <button type="submit">Cancelar</button>

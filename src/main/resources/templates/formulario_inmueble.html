@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo} + ' &mdash; arriendaya'"></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: header}"></div>
+
+<section class="seccion">
+    <div class="contenedor" style="max-width: 640px;">
+        <h2 style="margin-top: 0;" th:text="${titulo}"></h2>
+
+        <div class="panel-formulario">
+            <form th:action="${accion}" method="post">
+                <div class="campo-form">
+                    <label>Titulo</label>
+                    <input type="text" name="titulo" maxlength="150" required th:value="${inmueble.titulo}">
+                </div>
+                <div class="campo-form">
+                    <label>Descripcion</label>
+                    <textarea name="descripcion" rows="3" th:text="${inmueble.descripcion}"></textarea>
+                </div>
+                <div class="campo-form">
+                    <label>Tipo</label>
+                    <select name="tipo" required>
+                        <option th:each="t : ${tipos}" th:value="${t}" th:text="${t}"
+                                th:selected="${inmueble.tipo == t}"></option>
+                    </select>
+                </div>
+                <div class="campo-form">
+                    <label>Direccion</label>
+                    <input type="text" name="direccion" maxlength="200" required th:value="${inmueble.direccion}">
+                </div>
+                <div class="campo-form">
+                    <label>Ciudad</label>
+                    <input type="text" name="ciudad" maxlength="100" required
+                           th:value="${inmueble.ubicacion != null ? inmueble.ubicacion.ciudad : ''}">
+                </div>
+                <div class="campo-form">
+                    <label>Pais</label>
+                    <input type="text" name="pais" maxlength="100" required
+                           th:value="${inmueble.ubicacion != null ? inmueble.ubicacion.pais : 'Colombia'}">
+                </div>
+                <div class="campo-form">
+                    <label>Precio por noche (COP)</label>
+                    <input type="number" name="precioNoche" step="1" min="1" required th:value="${inmueble.precioNoche}">
+                </div>
+                <div class="campo-form">
+                    <label>Capacidad (huespedes)</label>
+                    <input type="number" name="capacidad" step="1" min="1" required th:value="${inmueble.capacidad}">
+                </div>
+                <div class="campo-form">
+                    <label>URL de la imagen</label>
+                    <input type="url" name="imagenUrl" maxlength="300" th:value="${inmueble.imagenUrl}"
+                           placeholder="https://...">
+                </div>
+                <button type="submit" th:text="${titulo}"></button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

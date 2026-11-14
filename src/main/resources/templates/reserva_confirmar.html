@@ -21,11 +21,19 @@
             <p>Valor total: <strong th:text="'$' + ${#numbers.formatInteger(valorTotal, 0, 'POINT')} + ' COP'"></strong></p>
         </div>
 
-        <form th:action="@{/inmuebles/{id}/reservar(id=${inmueble.id})}" method="post">
+        <form th:if="${autenticado}" th:action="@{/inmuebles/{id}/reservar(id=${inmueble.id})}" method="post">
             <input type="hidden" name="llegada" th:value="${llegada}">
             <input type="hidden" name="salida" th:value="${salida}">
             <button class="boton-reservar" type="submit">Confirmar y reservar</button>
         </form>
+        <div th:unless="${autenticado}" class="panel-formulario" style="margin-top: 10px;">
+            <p style="margin-top: 0;">Crea una cuenta o inicia sesion para confirmar esta reserva. No perderas el inmueble ni las fechas que elegiste.</p>
+            <div style="display:flex; gap:10px;">
+                <a class="boton-primario"
+                   th:href="@{/registro(redirect=@{/inmuebles/{id}/reservar/preview(id=${inmueble.id},llegada=${llegada},salida=${salida})})}">Crear cuenta</a>
+                <a th:href="@{/login(redirect=@{/inmuebles/{id}/reservar/preview(id=${inmueble.id},llegada=${llegada},salida=${salida})})}">Ya tengo cuenta, iniciar sesion</a>
+            </div>
+        </div>
         <p style="margin-top: 14px;"><a th:href="@{/inmuebles/{id}(id=${inmueble.id})}">&larr; Cambiar fechas</a></p>
     </div>
 </section>

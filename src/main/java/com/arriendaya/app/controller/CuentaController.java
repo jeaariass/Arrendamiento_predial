@@ -3,7 +3,9 @@ package com.arriendaya.app.controller;
 import com.arriendaya.app.model.Cliente;
 import com.arriendaya.app.model.EstadoReserva;
 import com.arriendaya.app.model.Usuario;
+import com.arriendaya.app.repository.BancoRepository;
 import com.arriendaya.app.repository.ClienteRepository;
+import com.arriendaya.app.service.PagoService;
 import com.arriendaya.app.service.ReservaService;
 import com.arriendaya.app.service.UsuarioService;
 import jakarta.servlet.http.HttpSession;
@@ -26,6 +28,8 @@ public class CuentaController {
     private final UsuarioService usuarioService;
     private final ClienteRepository clienteRepository;
     private final ReservaService reservaService;
+    private final PagoService pagoService;
+    private final BancoRepository bancoRepository;
 
     @GetMapping
     public String verCuenta(HttpSession session, Model model) {
@@ -66,6 +70,26 @@ public class CuentaController {
         return "mi_cuenta";
     }
 
+    @PostMapping("/reservas/{reservaId}/pagar")
+    public String pagarReserva(@PathVariable Long reservaId,
+                                @RequestParam Long bancoId,
+                                @RequestParam String metodoPago,
+                                HttpSession session, Model model) {
+        Cliente cliente = clienteDeLaSesion(session);
+        if (cliente == null) {
+            return "redirect:/login";
+        }
+        cargarModelo(cliente, model);
+        try {
+            pagoService.pagar(cliente, reservaId, bancoId, metodoPago);
+            cargarModelo(cliente, model);
+            model.addAttribute("mensaje", "Pago registrado, reserva confirmada");
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("error", ex.getMessage());
+        }
+        return "mi_cuenta";
+    }
+
     private Cliente clienteDeLaSesion(HttpSession session) {
         Long usuarioId = (Long) session.getAttribute("usuarioId");
         if (usuarioId == null) {
@@ -83,5 +107,6 @@ public class CuentaController {
         model.addAttribute("cliente", cliente);
         model.addAttribute("reservas", reservas);
         model.addAttribute("deuda", reservaService.deudaPendiente(reservas));
+        model.addAttribute("bancos", bancoRepository.findAll());
     }
 }

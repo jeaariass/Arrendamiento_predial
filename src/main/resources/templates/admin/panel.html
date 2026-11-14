@@ -5,6 +5,7 @@
     <title>Panel de administracion &mdash; arriendaya</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
 
@@ -13,10 +14,37 @@
 <section class="seccion">
     <div class="contenedor">
         <h2>Panel de administracion</h2>
+        <p><a href="/admin/personas">Buscar persona &rarr;</a></p>
         <p class="ayuda" th:text="${totalInmuebles} + ' alojamientos en total. Ocupado = tiene una reserva pendiente o confirmada que cubre hoy.'"></p>
 
         <div class="exito-mensaje" th:if="${mensaje}" th:text="${mensaje}"></div>
         <div class="error-mensaje" th:if="${error}" th:text="${error}"></div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-bottom: 24px;">
+            <div class="panel-formulario" style="margin:0;">
+                <div class="ayuda">Inmuebles totales</div>
+                <div style="font-size: 26px; font-weight: 800;" th:text="${resumen.totalInmuebles}"></div>
+            </div>
+            <div class="panel-formulario" style="margin:0;">
+                <div class="ayuda">Reservas activas</div>
+                <div style="font-size: 26px; font-weight: 800;" th:text="${resumen.reservasActivas}"></div>
+            </div>
+            <div class="panel-formulario" style="margin:0;">
+                <div class="ayuda">Deuda pendiente</div>
+                <div style="font-size: 22px; font-weight: 800;"
+                     th:text="'$' + ${#numbers.formatInteger(resumen.deudaPendiente, 0, 'POINT')}"></div>
+            </div>
+            <div class="panel-formulario" style="margin:0;">
+                <div class="ayuda">Total pagado</div>
+                <div style="font-size: 22px; font-weight: 800;"
+                     th:text="'$' + ${#numbers.formatInteger(resumen.totalPagado, 0, 'POINT')}"></div>
+            </div>
+        </div>
+
+        <details style="margin-bottom: 20px;" open>
+            <summary style="cursor: pointer; font-weight: 700; font-size: 13px;">Mapa de calor: donde estan las reservas activas</summary>
+            <div id="mapaCalor" style="height: 380px; margin-top: 10px; border-radius: 8px;"></div>
+        </details>
 
         <details style="margin-bottom: 20px;">
             <summary style="cursor: pointer; font-weight: 700; font-size: 13px;">
@@ -107,17 +135,52 @@
             </tbody>
         </table>
 
-        <div class="paginacion" th:if="${totalPaginas > 1}">
-            <a th:each="p : ${#numbers.sequence(0, totalPaginas - 1)}"
-               th:href="@{/admin(ciudad=${ciudad}, pagina=${p})}"
+        <div class="paginacion" th:if="${totalPaginas > 1}" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <a th:if="${pagina > 0}" th:href="@{/admin(ciudad=${ciudad}, estado=${estado}, pagina=${pagina - 1})}" class="pagina-link">&laquo; Anterior</a>
+            <span th:unless="${pagina > 0}" class="pagina-link" style="opacity:0.4;">&laquo; Anterior</span>
+
+            <a th:each="p : ${#numbers.sequence(paginaDesde, paginaHasta)}"
+               th:href="@{/admin(ciudad=${ciudad}, estado=${estado}, pagina=${p})}"
                th:text="${p + 1}"
                th:classappend="${p == pagina} ? ' activa' : ''"
                class="pagina-link"></a>
+
+            <a th:if="${pagina < totalPaginas - 1}" th:href="@{/admin(ciudad=${ciudad}, estado=${estado}, pagina=${pagina + 1})}" class="pagina-link">Siguiente &raquo;</a>
+            <span th:unless="${pagina < totalPaginas - 1}" class="pagina-link" style="opacity:0.4;">Siguiente &raquo;</span>
+
+            <form method="get" action="/admin" style="display:flex; gap:6px; align-items:center; margin-left:12px;"
+                  th:onsubmit="'document.getElementById(\'irAPagina\').value = Math.max(1, Math.min(this.paginaVisible.value, ' + ${totalPaginas} + ')) - 1; return true;'">
+                <input type="hidden" name="ciudad" th:value="${ciudad}">
+                <input type="hidden" name="estado" th:value="${estado}">
+                <input type="hidden" id="irAPagina" name="pagina" value="0">
+                <input type="number" name="paginaVisible" min="1" th:max="${totalPaginas}" placeholder="pagina"
+                       style="width:70px;">
+                <button type="submit">Ir</button>
+            </form>
+            <span class="ayuda" th:text="'Pagina ' + (${pagina} + 1) + ' de ' + ${totalPaginas}"></span>
         </div>
     </div>
 </section>
 
 <div th:replace="~{fragments/layout :: footer}"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script>
+    var mapaCalor = L.map('mapaCalor').setView([4.6, -74.08], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(mapaCalor);
+
+    fetch('/admin/mapa/reservas')
+        .then(function (resp) { return resp.json(); })
+        .then(function (puntos) {
+            var datos = puntos.map(function (p) { return [p.lat, p.lon, p.intensidad]; });
+            if (datos.length > 0) {
+                L.heatLayer(datos, { radius: 20, blur: 18, maxZoom: 12 }).addTo(mapaCalor);
+            }
+        });
+</script>
 
 </body>
 </html>

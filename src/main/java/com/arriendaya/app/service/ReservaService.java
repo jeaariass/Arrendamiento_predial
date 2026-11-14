@@ -20,7 +20,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class ReservaService {
 
-    private static final Set<EstadoReserva> ESTADOS_QUE_DEBEN = Set.of(EstadoReserva.PENDIENTE, EstadoReserva.CONFIRMADA);
+    private static final Set<EstadoReserva> ESTADOS_QUE_DEBEN = Set.of(EstadoReserva.PENDIENTE);
 
     private final ReservaRepository reservaRepository;
     private final InmuebleService inmuebleService;
@@ -98,6 +98,17 @@ public class ReservaService {
                 .filter(r -> ESTADOS_QUE_DEBEN.contains(r.getEstado()))
                 .map(Reserva::getValorTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /** La reserva futura mas cercana de un inmueble (pendiente o confirmada), o null si no tiene. */
+    public Reserva proximaReservaPorInmueble(Long inmuebleId) {
+        List<Reserva> futuras = reservaRepository.futurasPorInmueble(inmuebleId, LocalDate.now());
+        return futuras.isEmpty() ? null : futuras.get(0);
+    }
+
+    /** Si un inmueble tiene al menos una reserva (de cualquier estado); bloquea su eliminacion. */
+    public boolean existeReservaDe(Long inmuebleId) {
+        return reservaRepository.existsByInmuebleId(inmuebleId);
     }
 
     @Transactional

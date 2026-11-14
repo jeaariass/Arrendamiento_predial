@@ -17,7 +17,8 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/registro")
-    public String formularioRegistro() {
+    public String formularioRegistro(@RequestParam(required = false) String redirect, Model model) {
+        model.addAttribute("redirect", redirect);
         return "registro";
     }
 
@@ -29,6 +30,7 @@ public class AuthController {
                              @RequestParam String password,
                              @RequestParam(required = false, defaultValue = "false") boolean serPropietario,
                              @RequestParam(required = false, defaultValue = "false") boolean serCliente,
+                             @RequestParam(required = false) String redirect,
                              Model model,
                              HttpSession session) {
         try {
@@ -41,24 +43,28 @@ public class AuthController {
             session.setAttribute("usuarioNombre", usuario.getNombre());
             session.setAttribute("esAdmin", false);
             session.setAttribute("esPropietario", serPropietario);
-            return "redirect:/";
+            return "redirect:" + destinoSeguro(redirect);
         } catch (IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
+            model.addAttribute("redirect", redirect);
             return "registro";
         }
     }
 
     @GetMapping("/login")
-    public String formularioLogin() {
+    public String formularioLogin(@RequestParam(required = false) String redirect, Model model) {
+        model.addAttribute("redirect", redirect);
         return "login";
     }
 
     @PostMapping("/login")
     public String login(@RequestParam String email, @RequestParam String password,
+                         @RequestParam(required = false) String redirect,
                          Model model, HttpSession session) {
         var usuarioOpt = usuarioService.porEmail(email);
         if (usuarioOpt.isEmpty() || !passwordEncoder.matches(password, usuarioOpt.get().getPasswordHash())) {
             model.addAttribute("error", "Correo o contrasena incorrectos");
+            model.addAttribute("redirect", redirect);
             return "login";
         }
         Usuario usuario = usuarioOpt.get();
@@ -66,7 +72,15 @@ public class AuthController {
         session.setAttribute("usuarioNombre", usuario.getNombre());
         session.setAttribute("esAdmin", usuario.isEsAdmin());
         session.setAttribute("esPropietario", usuarioService.comoPropietario(usuario.getId()).isPresent());
-        return "redirect:/";
+        return "redirect:" + destinoSeguro(redirect);
+    }
+
+    /** Evita open-redirect: solo rutas relativas propias ("/algo"), nunca "//host" ni URLs con esquema. */
+    private String destinoSeguro(String redirect) {
+        if (redirect != null && redirect.startsWith("/") && !redirect.startsWith("//")) {
+            return redirect;
+        }
+        return "/";
     }
 
     @GetMapping("/logout")

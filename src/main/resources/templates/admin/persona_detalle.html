@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${usuario.nombre} + ' ' + ${usuario.apellido} + ' &mdash; arriendaya'"></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: header}"></div>
+
+<section class="seccion">
+    <div class="contenedor">
+        <p><a href="/admin/personas">&larr; Volver a buscar</a></p>
+        <h2 th:text="${usuario.nombre} + ' ' + ${usuario.apellido}"></h2>
+        <p class="ayuda" th:text="${usuario.email}"></p>
+
+        <div th:if="${reservas != null}" style="margin-bottom: 32px;">
+            <h1 style="font-size: 18px;">Reservas como cliente</h1>
+            <p style="font-size: 22px; font-weight: 800;"
+               th:text="'Debe: $' + ${#numbers.formatInteger(deuda, 0, 'POINT')} + ' COP'"></p>
+            <table class="tabla-admin" th:if="${not #lists.isEmpty(reservas)}">
+                <thead>
+                    <tr><th>Alojamiento</th><th>Fechas</th><th>Valor</th><th>Estado</th></tr>
+                </thead>
+                <tbody>
+                    <tr th:each="r : ${reservas}">
+                        <td><a th:href="@{/inmuebles/{id}(id=${r.inmueble.id})}" th:text="${r.inmueble.titulo}"></a></td>
+                        <td th:text="${r.fechaInicio} + ' a ' + ${r.fechaFin}"></td>
+                        <td th:text="'$' + ${#numbers.formatInteger(r.valorTotal, 0, 'POINT')}"></td>
+                        <td th:text="${r.estado}"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="vacio" th:if="${#lists.isEmpty(reservas)}">No tiene reservas.</div>
+        </div>
+
+        <div th:if="${inmuebles != null}">
+            <h1 style="font-size: 18px;">Alojamientos como propietario</h1>
+            <table class="tabla-admin" th:if="${not #lists.isEmpty(inmuebles)}">
+                <thead>
+                    <tr><th>Alojamiento</th><th>Ciudad</th><th>Estado</th><th>Reservado por</th><th>Fechas</th></tr>
+                </thead>
+                <tbody>
+                    <tr th:each="fila : ${inmuebles}">
+                        <td><a th:href="@{/inmuebles/{id}(id=${fila.inmueble.id})}" th:text="${fila.inmueble.titulo}"></a></td>
+                        <td th:text="${fila.inmueble.ubicacion.ciudad}"></td>
+                        <td>
+                            <span th:if="${fila.reservaActual != null}" class="badge-ocupado">Reservado</span>
+                            <span th:if="${fila.reservaActual == null}" class="badge-libre">Libre</span>
+                        </td>
+                        <td th:text="${fila.reservaActual != null} ? (${fila.reservaActual.cliente.usuario.nombre} + ' ' + ${fila.reservaActual.cliente.usuario.apellido}) : '&mdash;'"></td>
+                        <td th:text="${fila.reservaActual != null} ? (${fila.reservaActual.fechaInicio} + ' a ' + ${fila.reservaActual.fechaFin}) : '&mdash;'"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="vacio" th:if="${#lists.isEmpty(inmuebles)}">No tiene alojamientos publicados.</div>
+        </div>
+
+        <div class="vacio" th:if="${reservas == null and inmuebles == null}">
+            Esta persona no es cliente ni propietario todavia.
+        </div>
+    </div>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+</body>
+</html>

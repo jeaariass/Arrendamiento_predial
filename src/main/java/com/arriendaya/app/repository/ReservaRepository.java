@@ -11,6 +11,13 @@ import java.util.List;
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     List<Reserva> findByClienteIdOrderByFechaReservaDesc(Long clienteId);
     List<Reserva> findByInmueble_Propietario_IdOrderByFechaReservaDesc(Long propietarioId);
+    boolean existsByInmuebleId(Long inmuebleId);
+
+    @Query("select count(r) from Reserva r where r.estado in ('PENDIENTE', 'CONFIRMADA')")
+    long contarActivas();
+
+    @Query("select coalesce(sum(r.valorTotal), 0) from Reserva r where r.estado = 'PENDIENTE'")
+    java.math.BigDecimal sumarDeudaPendiente();
 
     @Query("""
         select r from Reserva r

@@ -16,6 +16,7 @@
     <div class="error-mensaje" th:if="${error}" th:text="${error}"></div>
 
     <form action="/login" method="post">
+        <input type="hidden" name="redirect" th:value="${redirect}">
         <div class="campo-form">
             <label>Correo electronico</label>
             <input type="email" name="email" required>
@@ -28,7 +29,7 @@
     </form>
 
     <p style="font-size: 13px; color: var(--gris-suave); margin-top: 16px;">
-        Cuenta de ejemplo: propietario.demo@arriendo.co / demo1234
+        Cuenta de ejemplo: dueno01@arriendaya.demo / dueno011234
     </p>
 </div>
 
