@@ -11,35 +11,48 @@ import com.arriendaya.app.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
 /**
- * Pobla 14 ciudades grandes de Colombia (Bogota ya tiene 500 reales de Inside
- * Airbnb via ImportadorAirbnbSeeder, asi que no se repite aqui) con 500
- * alojamientos de ejemplo cada una, para que el buscador por ciudad tenga
- * contenido real en todo el pais y no solo en Bogota. No son datos reales:
- * se generan con plantillas y coordenadas con un poco de ruido alrededor del
- * centro de cada ciudad, y la descripcion lo dice explicitamente.
+ * Puebla todos los inmuebles de la aplicacion: primero Bogota con datos reales
+ * de Inside Airbnb (https://insideairbnb.com, dataset abierto para uso
+ * academico/investigacion, CSV en src/main/resources/data/bogota_airbnb.csv),
+ * y luego las otras 14 ciudades grandes de Colombia con alojamientos de
+ * ejemplo generados por plantilla. Son los dos pasos de un mismo proceso de
+ * carga (Bogota real, resto sintetico), por eso van en un solo seeder.
+ *
+ * Esta es la unica fuente de inmuebles: ya no existe un DataSeeder aparte con
+ * un puñado de inmuebles de ejemplo "a mano", para no tener dos lugares con
+ * datos de arranque.
+ *
+ * Los inmuebles no quedan cada uno con su propio "dueno de un solo
+ * alojamiento": se reparten al azar entre el pool de PropietariosPoolSeeder,
+ * asi cada dueno termina con varias propiedades.
  */
 @Component
-@Order(3)
+@Order(1)
 @RequiredArgsConstructor
-public class CiudadesSinteticasSeeder implements CommandLineRunner {
+public class PoblarInmueblesSeeder implements CommandLineRunner {
 
-    private static final String EMAIL_MARCADOR = "ciudades.sinteticas@arriendaya.local";
+    private static final String EMAIL_MARCADOR_BOGOTA = "importacion.airbnb@arriendaya.local";
+    private static final String EMAIL_MARCADOR_CIUDADES = "ciudades.sinteticas@arriendaya.local";
     private static final int INMUEBLES_POR_CIUDAD = 500;
 
     private record Ciudad(String nombre, double lat, double lon) {
     }
 
-    private static final List<Ciudad> CIUDADES = List.of(
+    private static final List<Ciudad> CIUDADES_SINTETICAS = List.of(
             new Ciudad("Medellin", 6.2442, -75.5812),
             new Ciudad("Cali", 3.4516, -76.5320),
             new Ciudad("Barranquilla", 10.9685, -74.7813),
@@ -78,18 +91,84 @@ public class CiudadesSinteticasSeeder implements CommandLineRunner {
 
     @Override
     @Transactional
-    public void run(String... args) {
-        if (usuarioRepository.existsByEmail(EMAIL_MARCADOR)) {
+    public void run(String... args) throws Exception {
+        List<Propietario> pool = propietariosPoolSeeder.cargarPool();
+        if (pool.isEmpty()) {
+            throw new IllegalStateException("El pool de propietarios esta vacio: no se pueden poblar inmuebles");
+        }
+
+        importarBogotaDesdeAirbnb(pool);
+        generarCiudadesSinteticas(pool);
+    }
+
+    private void importarBogotaDesdeAirbnb(List<Propietario> pool) throws Exception {
+        if (usuarioRepository.existsByEmail(EMAIL_MARCADOR_BOGOTA)) {
             return;
         }
 
-        List<Propietario> pool = propietariosPoolSeeder.cargarPool();
-        if (pool.isEmpty()) {
-            throw new IllegalStateException("El pool de propietarios esta vacio: no se pueden generar las ciudades");
+        Ubicacion bogota = ubicacionRepository.findByCiudadIgnoreCaseAndPaisIgnoreCase("Bogota", "Colombia")
+                .orElseGet(() -> {
+                    Ubicacion u = new Ubicacion();
+                    u.setCiudad("Bogota");
+                    u.setPais("Colombia");
+                    return ubicacionRepository.save(u);
+                });
+
+        Random random = new Random();
+        int importados = 0;
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                new ClassPathResource("data/bogota_airbnb.csv").getInputStream(), StandardCharsets.UTF_8))) {
+            String linea = br.readLine(); // encabezado
+            while ((linea = br.readLine()) != null) {
+                if (linea.isBlank()) {
+                    continue;
+                }
+                String[] campos = linea.split("\\|", -1);
+                if (campos.length < 10) {
+                    continue;
+                }
+                String nombreInmueble = campos[2];
+                String roomType = campos[3];
+                String barrio = campos[4];
+                BigDecimal precio = new BigDecimal(campos[5]);
+                Integer capacidad = Integer.valueOf(campos[6]);
+                String imagenUrl = campos[7];
+                Double latitud = Double.valueOf(campos[8]);
+                Double longitud = Double.valueOf(campos[9]);
+
+                Propietario propietario = pool.get(random.nextInt(pool.size()));
+
+                Inmueble inmueble = new Inmueble();
+                inmueble.setPropietario(propietario);
+                inmueble.setUbicacion(bogota);
+                inmueble.setTitulo(nombreInmueble);
+                inmueble.setDescripcion("Alojamiento real tomado de Inside Airbnb (dataset abierto de Bogota, uso academico).");
+                inmueble.setTipo(mapearTipo(roomType));
+                inmueble.setDireccion(barrio + ", Bogota");
+                inmueble.setPrecioNoche(precio);
+                inmueble.setCapacidad(capacidad);
+                inmueble.setImagenUrl(imagenUrl);
+                inmueble.setLatitud(latitud);
+                inmueble.setLongitud(longitud);
+                inmuebleRepository.save(inmueble);
+                importados++;
+            }
+        }
+
+        usuarioRepository.save(marcador("Importacion", "Inside Airbnb", EMAIL_MARCADOR_BOGOTA));
+
+        org.slf4j.LoggerFactory.getLogger(PoblarInmueblesSeeder.class)
+                .info("Importados {} alojamientos reales de Bogota desde Inside Airbnb", importados);
+    }
+
+    private void generarCiudadesSinteticas(List<Propietario> pool) {
+        if (usuarioRepository.existsByEmail(EMAIL_MARCADOR_CIUDADES)) {
+            return;
         }
 
         Random random = new Random();
-        for (Ciudad ciudad : CIUDADES) {
+        for (Ciudad ciudad : CIUDADES_SINTETICAS) {
             Ubicacion ubicacion = ubicacionRepository.findByCiudadIgnoreCaseAndPaisIgnoreCase(ciudad.nombre(), "Colombia")
                     .orElseGet(() -> {
                         Ubicacion u = new Ubicacion();
@@ -103,15 +182,29 @@ public class CiudadesSinteticasSeeder implements CommandLineRunner {
             }
         }
 
-        Usuario marcador = new Usuario();
-        marcador.setNombre("Ciudades");
-        marcador.setApellido("Sinteticas");
-        marcador.setEmail(EMAIL_MARCADOR);
-        marcador.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
-        usuarioRepository.save(marcador);
+        usuarioRepository.save(marcador("Ciudades", "Sinteticas", EMAIL_MARCADOR_CIUDADES));
 
-        org.slf4j.LoggerFactory.getLogger(CiudadesSinteticasSeeder.class)
-                .info("Generados {} alojamientos de ejemplo en {} ciudades", CIUDADES.size() * INMUEBLES_POR_CIUDAD, CIUDADES.size());
+        org.slf4j.LoggerFactory.getLogger(PoblarInmueblesSeeder.class)
+                .info("Generados {} alojamientos de ejemplo en {} ciudades", CIUDADES_SINTETICAS.size() * INMUEBLES_POR_CIUDAD, CIUDADES_SINTETICAS.size());
+    }
+
+    private Usuario marcador(String nombre, String apellido, String email) {
+        Usuario marcador = new Usuario();
+        marcador.setNombre(nombre);
+        marcador.setApellido(apellido);
+        marcador.setEmail(email);
+        marcador.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
+        return marcador;
+    }
+
+    private TipoInmueble mapearTipo(String roomType) {
+        if (roomType == null) {
+            return TipoInmueble.APARTAMENTO;
+        }
+        return switch (roomType) {
+            case "Private room", "Shared room", "Hotel room" -> TipoInmueble.HABITACION;
+            default -> TipoInmueble.APARTAMENTO;
+        };
     }
 
     private Inmueble generarInmueble(Ciudad ciudad, Ubicacion ubicacion, List<Propietario> pool, Random random) {

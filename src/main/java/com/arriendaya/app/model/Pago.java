@@ -19,8 +19,8 @@ public class Pago {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "reserva_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "reserva_id", nullable = false, unique = true)
     private Reserva reserva;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -38,4 +38,11 @@ public class Pago {
 
     @Column(nullable = false, length = 20)
     private String estado = "CONFIRMADO";
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "validado_por")
+    private Usuario validadoPor;
+
+    @Column(name = "fecha_validacion")
+    private LocalDateTime fechaValidacion;
 }

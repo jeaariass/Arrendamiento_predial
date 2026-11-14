@@ -31,6 +31,14 @@ public class Giro {
     @JoinColumn(name = "propietario_id", nullable = false)
     private Propietario propietario;
 
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "pago_id", nullable = false, unique = true)
+    private Pago pago;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "realizado_por", nullable = false)
+    private Usuario realizadoPor;
+
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal monto;
 
