@@ -6,6 +6,7 @@ import com.arriendaya.app.model.EstadoReserva;
 import com.arriendaya.app.model.Pago;
 import com.arriendaya.app.model.Reserva;
 import com.arriendaya.app.repository.BancoRepository;
+import com.arriendaya.app.repository.InmuebleRepository;
 import com.arriendaya.app.repository.PagoRepository;
 import com.arriendaya.app.repository.ReservaRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PagoService {
 
     private final ReservaRepository reservaRepository;
+    private final InmuebleRepository inmuebleRepository;
     private final BancoRepository bancoRepository;
     private final PagoRepository pagoRepository;
 
@@ -37,6 +39,15 @@ public class PagoService {
                 .orElseThrow(() -> new IllegalArgumentException("Banco no encontrado: " + bancoId));
         if ("TARJETA".equals(metodoPago) && (referencia == null || referencia.isBlank())) {
             throw new IllegalArgumentException("Para pagar con tarjeta necesitamos el numero de tarjeta");
+        }
+
+        // Bloquea el inmueble para que dos pagos a la vez (de reservas PENDIENTE distintas, en fechas
+        // cruzadas) no confirmen ambos: una PENDIENTE no reserva el cupo, asi que se revalida aqui.
+        inmuebleRepository.buscarParaBloquear(reserva.getInmueble().getId());
+        if (reservaRepository.existeSolapadaExcluyendo(reserva.getInmueble().getId(), reservaId,
+                reserva.getFechaInicio(), reserva.getFechaFin())) {
+            throw new IllegalArgumentException(
+                    "Esas fechas ya quedaron confirmadas con otra reserva mientras esta esperaba el pago");
         }
 
         Pago pago = new Pago();

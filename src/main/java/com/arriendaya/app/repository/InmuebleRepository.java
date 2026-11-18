@@ -2,17 +2,25 @@ package com.arriendaya.app.repository;
 
 import com.arriendaya.app.model.Inmueble;
 import com.arriendaya.app.model.TipoInmueble;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface InmuebleRepository extends JpaRepository<Inmueble, Long> {
 
     List<Inmueble> findByPropietarioId(Long propietarioId);
+
+    /** Bloquea la fila del inmueble durante el pago, para que dos pagos a la vez no confirmen fechas que se cruzan. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select i from Inmueble i where i.id = :id")
+    Optional<Inmueble> buscarParaBloquear(@Param("id") Long id);
 
     @Query("""
         select i from Inmueble i

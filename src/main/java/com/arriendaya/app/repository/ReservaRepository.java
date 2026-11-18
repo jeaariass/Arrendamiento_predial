@@ -10,7 +10,22 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
-    List<Reserva> findByClienteIdOrderByFechaReservaDesc(Long clienteId);
+
+    /**
+     * join fetch porque mi_cuenta.html lee inmueble.ubicacion.ciudad fuera de la sesion de
+     * Hibernate que abrio esta consulta (ver PagoService.pagar, que puede re-renderizar esta
+     * pantalla desde una transaccion distinta tras rechazar un pago); sin el fetch, eso tira
+     * LazyInitializationException.
+     */
+    @Query("""
+        select r from Reserva r
+        join fetch r.inmueble i
+        join fetch i.ubicacion
+        where r.cliente.id = :clienteId
+        order by r.fechaReserva desc
+        """)
+    List<Reserva> findByClienteIdOrderByFechaReservaDesc(@Param("clienteId") Long clienteId);
+
     List<Reserva> findByInmueble_Propietario_IdOrderByFechaReservaDesc(Long propietarioId);
     boolean existsByInmuebleId(Long inmuebleId);
 
@@ -54,4 +69,20 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     boolean existeSolapada(@Param("inmuebleId") Long inmuebleId,
                             @Param("fechaInicio") LocalDate fechaInicio,
                             @Param("fechaFin") LocalDate fechaFin);
+
+    /**
+     * Igual que existeSolapada pero ignorando una reserva puntual: se usa al pagar,
+     * para revisar contra otras CONFIRMADAS sin chocar con la reserva que se esta confirmando.
+     */
+    @Query("""
+        select count(r) > 0 from Reserva r
+        where r.inmueble.id = :inmuebleId
+          and r.id <> :reservaId
+          and r.estado = 'CONFIRMADA'
+          and r.fechaInicio <= :fechaFin and r.fechaFin >= :fechaInicio
+        """)
+    boolean existeSolapadaExcluyendo(@Param("inmuebleId") Long inmuebleId,
+                                      @Param("reservaId") Long reservaId,
+                                      @Param("fechaInicio") LocalDate fechaInicio,
+                                      @Param("fechaFin") LocalDate fechaFin);
 }
