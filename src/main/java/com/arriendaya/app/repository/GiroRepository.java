@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface GiroRepository extends JpaRepository<Giro, Long> {
     List<Giro> findByPropietarioIdOrderByFechaGiroDesc(Long propietarioId);
+    boolean existsByPagoId(Long pagoId);
 }

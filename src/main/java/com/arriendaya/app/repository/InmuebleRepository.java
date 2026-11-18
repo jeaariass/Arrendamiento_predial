@@ -23,8 +23,8 @@ public interface InmuebleRepository extends JpaRepository<Inmueble, Long> {
           and i.estado = 'DISPONIBLE'
           and i.id not in (
             select r.inmueble.id from Reserva r
-            where r.estado in ('PENDIENTE', 'CONFIRMADA')
-              and :fechaInicio is not null and :fechaFin is not null
+            where r.estado = 'CONFIRMADA'
+              and cast(:fechaInicio as date) is not null and cast(:fechaFin as date) is not null
               and r.fechaInicio <= :fechaFin and r.fechaFin >= :fechaInicio
           )
         order by i.id desc
@@ -55,8 +55,8 @@ public interface InmuebleRepository extends JpaRepository<Inmueble, Long> {
           and (:ciudad = '' or lower(u.ciudad) like lower(concat('%', :ciudad, '%')))
           and i.id not in (
             select r.inmueble.id from Reserva r
-            where r.estado in ('PENDIENTE', 'CONFIRMADA')
-              and :fechaInicio is not null and :fechaFin is not null
+            where r.estado = 'CONFIRMADA'
+              and cast(:fechaInicio as date) is not null and cast(:fechaFin as date) is not null
               and r.fechaInicio <= :fechaFin and r.fechaFin >= :fechaInicio
           )
         """)
@@ -85,24 +85,34 @@ public interface InmuebleRepository extends JpaRepository<Inmueble, Long> {
     @Query("""
         select i from Inmueble i
         join i.ubicacion u
+        join i.propietario prop
+        join prop.usuario pu
         where (:ciudad = '' or lower(u.ciudad) like lower(concat('%', :ciudad, '%')))
           and (
             :estadoFiltro = ''
             or (:estadoFiltro = 'OCUPADO' and exists (
                 select 1 from Reserva r
-                where r.inmueble = i and r.estado in ('PENDIENTE', 'CONFIRMADA')
+                where r.inmueble = i and r.estado = 'CONFIRMADA'
                   and r.fechaInicio <= current_date and r.fechaFin >= current_date
             ))
             or (:estadoFiltro = 'LIBRE' and not exists (
                 select 1 from Reserva r
-                where r.inmueble = i and r.estado in ('PENDIENTE', 'CONFIRMADA')
+                where r.inmueble = i and r.estado = 'CONFIRMADA'
                   and r.fechaInicio <= current_date and r.fechaFin >= current_date
             ))
+          )
+          and (
+            :q = ''
+            or lower(i.titulo) like lower(concat('%', :q, '%'))
+            or lower(pu.nombre) like lower(concat('%', :q, '%'))
+            or lower(pu.apellido) like lower(concat('%', :q, '%'))
+            or lower(pu.email) like lower(concat('%', :q, '%'))
           )
         order by i.id asc
         """)
     Page<Inmueble> paraAdmin(@Param("ciudad") String ciudad,
                              @Param("estadoFiltro") String estadoFiltro,
+                             @Param("q") String q,
                              Pageable pageable);
 
     @Query("""

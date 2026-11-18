@@ -32,6 +32,12 @@ public class InmuebleController {
         return "detalle";
     }
 
+    @GetMapping("/{id}/fechas-ocupadas")
+    @ResponseBody
+    public java.util.List<com.arriendaya.app.dto.RangoFecha> fechasOcupadas(@PathVariable Long id) {
+        return reservaService.fechasOcupadasConfirmadas(id);
+    }
+
     @GetMapping("/nuevo")
     public String formularioNuevo(HttpSession session, Model model) {
         if (session.getAttribute("usuarioId") == null) {

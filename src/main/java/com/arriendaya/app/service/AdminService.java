@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,13 +43,14 @@ public class AdminService {
     @Value("${SEED_DEMO_USERS:true}")
     private boolean seedDemoUsers;
 
-    public Page<Inmueble> listarPagina(String ciudad, String estado, int pagina) {
+    public Page<Inmueble> listarPagina(String ciudad, String estado, String q, int pagina) {
         String ciudadQuery = (ciudad == null || ciudad.isBlank()) ? "" : ciudad.trim();
         String estadoQuery = (estado == null) ? "" : estado.trim().toUpperCase();
         if (!estadoQuery.equals("LIBRE") && !estadoQuery.equals("OCUPADO")) {
             estadoQuery = "";
         }
-        return inmuebleRepository.paraAdmin(ciudadQuery, estadoQuery, PageRequest.of(Math.max(pagina, 0), TAMANO_PAGINA));
+        String qQuery = (q == null || q.isBlank()) ? "" : q.trim();
+        return inmuebleRepository.paraAdmin(ciudadQuery, estadoQuery, qQuery, PageRequest.of(Math.max(pagina, 0), TAMANO_PAGINA));
     }
 
     /** Lista de usuario/clave de los duenos del pool demo, solo visible si el demo esta prendido. */
@@ -93,7 +95,8 @@ public class AdminService {
         LocalDate hoy = LocalDate.now();
         LocalDate finVentana = hoy.plusDays(DIAS_VENTANA);
 
-        List<Reserva> reservas = reservaRepository.futurasPorInmueble(inmueble.getId(), hoy);
+        // Solo las reservas CONFIRMADAS (pagadas) ocupan de verdad un inmueble; una PENDIENTE no lo bloquea.
+        List<Reserva> reservas = reservaRepository.confirmadasFuturasPorInmueble(inmueble.getId(), hoy);
 
         List<RangoFecha> ocupados = new ArrayList<>();
         for (Reserva r : reservas) {
@@ -120,6 +123,17 @@ public class AdminService {
             libres.add(new RangoFecha(cursor, finVentana));
         }
 
-        return new EstadoOcupacion(inmueble, ocupadoHoy, ocupados, libres);
+        String clienteActual = reservas.stream()
+                .filter(r -> !r.getFechaInicio().isAfter(hoy) && !r.getFechaFin().isBefore(hoy))
+                .findFirst()
+                .map(r -> r.getCliente().getUsuario().getNombre() + " " + r.getCliente().getUsuario().getApellido())
+                .orElse(null);
+
+        BigDecimal ganancia = pagoRepository.sumarPorInmueble(inmueble.getId());
+        BigDecimal montoPendienteGiro = pagoRepository.pendientesDeGiroPorInmueble(inmueble.getId()).stream()
+                .map(com.arriendaya.app.model.Pago::getMonto)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new EstadoOcupacion(inmueble, ocupadoHoy, ocupados, libres, clienteActual, ganancia, montoPendienteGiro);
     }
 }

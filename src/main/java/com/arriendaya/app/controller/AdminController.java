@@ -5,6 +5,7 @@ import com.arriendaya.app.dto.InmuebleConReserva;
 import com.arriendaya.app.model.EstadoReserva;
 import com.arriendaya.app.model.Inmueble;
 import com.arriendaya.app.service.AdminService;
+import com.arriendaya.app.service.GiroService;
 import com.arriendaya.app.service.InmuebleService;
 import com.arriendaya.app.service.ReorganizarReservasService;
 import com.arriendaya.app.service.ReservaService;
@@ -31,10 +32,12 @@ public class AdminController {
     private final ReservaService reservaService;
     private final ReorganizarReservasService reorganizarReservasService;
     private final UsuarioService usuarioService;
+    private final GiroService giroService;
 
     @GetMapping
     public String panel(@RequestParam(required = false) String ciudad,
                          @RequestParam(required = false) String estado,
+                         @RequestParam(required = false) String q,
                          @RequestParam(defaultValue = "0") int pagina,
                          @RequestParam(required = false) String mensaje,
                          @RequestParam(required = false) String error,
@@ -43,15 +46,16 @@ public class AdminController {
             return "redirect:/login";
         }
 
-        Page<Inmueble> paginaInmuebles = adminService.listarPagina(ciudad, estado, pagina);
+        Page<Inmueble> paginaInmuebles = adminService.listarPagina(ciudad, estado, q, pagina);
         List<EstadoOcupacion> filas = paginaInmuebles.getContent().stream()
                 .map(adminService::calcularOcupacion)
                 .toList();
 
         model.addAttribute("filas", filas);
-        model.addAttribute("ciudadesTop", inmuebleService.ciudadesTop());
+        model.addAttribute("ciudades", inmuebleService.todasLasCiudades());
         model.addAttribute("ciudad", ciudad);
         model.addAttribute("estado", estado);
+        model.addAttribute("q", q);
         model.addAttribute("pagina", pagina);
         int totalPaginas = paginaInmuebles.getTotalPages();
         int ventana = 10;
@@ -129,8 +133,13 @@ public class AdminController {
         if (!Boolean.TRUE.equals(session.getAttribute("esAdmin"))) {
             return "redirect:/login";
         }
+        var reservas = reservaService.paraAdmin(estado);
+        var estadoPagoPorReserva = reservas.stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        com.arriendaya.app.model.Reserva::getId, giroService::estadoPago));
         model.addAttribute("estado", estado);
-        model.addAttribute("reservas", reservaService.paraAdmin(estado));
+        model.addAttribute("reservas", reservas);
+        model.addAttribute("estadoPagoPorReserva", estadoPagoPorReserva);
         return "admin/reservas";
     }
 
@@ -148,6 +157,22 @@ public class AdminController {
             reservaService.asignarPorAdmin(emailCliente, inmuebleId, fechaInicio, fechaFin, valorTotal);
             return "redirect:/admin?mensaje=" + java.net.URLEncoder.encode(
                     "Inmueble asignado a " + emailCliente, java.nio.charset.StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException ex) {
+            return "redirect:/admin?error=" + java.net.URLEncoder.encode(ex.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
+        }
+    }
+
+    @PostMapping("/girar")
+    public String girar(@RequestParam Long inmuebleId, HttpSession session) {
+        if (!Boolean.TRUE.equals(session.getAttribute("esAdmin"))) {
+            return "redirect:/login";
+        }
+        Long adminId = (Long) session.getAttribute("usuarioId");
+        try {
+            var resultado = giroService.pagarPendientesDeInmueble(inmuebleId, adminId);
+            String mensaje = "Se giraron $" + resultado.total().toBigInteger() + " al propietario ("
+                    + resultado.cantidadPagos() + " pago(s)).";
+            return "redirect:/admin?mensaje=" + java.net.URLEncoder.encode(mensaje, java.nio.charset.StandardCharsets.UTF_8);
         } catch (IllegalArgumentException ex) {
             return "redirect:/admin?error=" + java.net.URLEncoder.encode(ex.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
         }

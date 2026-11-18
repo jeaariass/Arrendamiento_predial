@@ -18,7 +18,7 @@ import java.util.List;
 public class InmuebleService {
 
     private static final int MAX_CIUDADES_TOP = 5;
-    private static final int MAX_SUGERENCIAS = 8;
+    private static final int MAX_SUGERENCIAS = 30;
     private static final int MAX_PUNTOS_MAPA = 1000;
 
     private final InmuebleRepository inmuebleRepository;
@@ -80,6 +80,11 @@ public class InmuebleService {
         return inmuebleRepository.ciudadesPorCantidadDesc().stream()
                 .limit(MAX_CIUDADES_TOP)
                 .toList();
+    }
+
+    /** Todas las ciudades con inmuebles publicados, para selects que no deben limitarse al top 5. */
+    public List<String> todasLasCiudades() {
+        return ubicacionRepository.findDistinctCiudades();
     }
 
     public List<String> sugerirCiudades(String q) {

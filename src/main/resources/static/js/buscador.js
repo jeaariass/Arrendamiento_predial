@@ -35,11 +35,9 @@
         var timer;
 
         function mostrar(q) {
-            if (q === "") {
-                render(box, input, window.CIUDADES_TOP || []);
-            } else {
-                buscarSugerencias(box, input, q);
-            }
+            // Siempre se consulta el backend, incluso vacio: asi se ven TODAS las ciudades
+            // disponibles y no solo un top-5, que hacia parecer que el filtro no funcionaba.
+            buscarSugerencias(box, input, q);
         }
 
         input.addEventListener("focus", function () {

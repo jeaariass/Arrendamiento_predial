@@ -1,6 +1,7 @@
 package com.arriendaya.app.controller;
 
 import com.arriendaya.app.dto.InmuebleConReserva;
+import com.arriendaya.app.service.GiroService;
 import com.arriendaya.app.service.InmuebleService;
 import com.arriendaya.app.service.ReservaService;
 import com.arriendaya.app.service.UsuarioService;
@@ -21,6 +22,7 @@ public class PropietarioController {
     private final UsuarioService usuarioService;
     private final InmuebleService inmuebleService;
     private final ReservaService reservaService;
+    private final GiroService giroService;
 
     @GetMapping("/propietarios/{id}")
     public String perfil(@PathVariable Long id,
@@ -41,7 +43,11 @@ public class PropietarioController {
         model.addAttribute("mensaje", mensaje);
         model.addAttribute("error", error);
         if (esPropio) {
-            model.addAttribute("historialReservas", reservaService.deInmueblesDePropietario(id));
+            var historial = reservaService.deInmueblesDePropietario(id);
+            model.addAttribute("historialReservas", historial);
+            model.addAttribute("estadoPagoPorReserva", historial.stream()
+                    .collect(java.util.stream.Collectors.toMap(
+                            com.arriendaya.app.model.Reserva::getId, giroService::estadoPago)));
         }
         return "perfil_propietario";
     }

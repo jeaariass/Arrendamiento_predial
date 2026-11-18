@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css"
+          integrity="sha384-RkASv+6KfBMW9eknReJIJ6b3UnjKOKC5bOUaNgIY778NFbQ8MtWq9Lr/khUgqtTt" crossorigin="anonymous">
 </head>
 <body>
 
@@ -55,12 +57,13 @@
                 <form th:action="@{/inmuebles/{id}/reservar/preview(id=${inmueble.id})}" method="get">
                     <div>
                         <label>Llegada</label>
-                        <input type="date" name="llegada" required>
+                        <input type="text" id="campoLlegada" name="llegada" placeholder="Elige una fecha" autocomplete="off" required>
                     </div>
                     <div>
                         <label>Salida</label>
-                        <input type="date" name="salida" required>
+                        <input type="text" id="campoSalida" name="salida" placeholder="Elige una fecha" autocomplete="off" required>
                     </div>
+                    <p class="ayuda" style="font-size: 12px;">Las fechas ya reservadas y pagadas no se pueden elegir.</p>
                     <button class="boton-reservar" type="submit">Ver precio y reservar</button>
                 </form>
             </div>
@@ -81,6 +84,34 @@
     iniciarMapaCercano('mapaInmueble', 'listaInmueble',
         /*[[${inmueble.latitud}]]*/ 0, /*[[${inmueble.longitud}]]*/ 0,
         /*[[${inmueble.id}]]*/ 0, popupCentro);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"
+        integrity="sha384-5JqMv4L/Xa0hfvtF06qboNdhvuYXUku9ZrhZh3bSk8VXF0A/RuSLHpLsSV9Zqhl6" crossorigin="anonymous"></script>
+<script th:inline="javascript">
+    var inmuebleId = /*[[${inmueble.id}]]*/ 0;
+
+    fetch('/inmuebles/' + inmuebleId + '/fechas-ocupadas')
+        .then(function (r) { return r.json(); })
+        .then(function (rangos) {
+            var ocupadas = rangos.map(function (r) { return { from: r.inicio, to: r.fin }; });
+
+            var fpSalida = flatpickr('#campoSalida', {
+                dateFormat: 'Y-m-d',
+                minDate: new Date().fp_incr(1),
+                disable: ocupadas
+            });
+
+            flatpickr('#campoLlegada', {
+                dateFormat: 'Y-m-d',
+                minDate: 'today',
+                disable: ocupadas,
+                onChange: function (selectedDates, dateStr) {
+                    fpSalida.set('minDate', dateStr ? new Date(selectedDates[0]).fp_incr(1) : new Date().fp_incr(1));
+                }
+            });
+        })
+        .catch(function () {});
 </script>
 
 </body>

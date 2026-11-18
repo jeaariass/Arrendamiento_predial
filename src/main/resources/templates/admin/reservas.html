@@ -30,7 +30,7 @@
         <div class="tabla-admin-wrap">
         <table class="tabla-admin" th:if="${not #lists.isEmpty(reservas)}">
             <thead>
-                <tr><th>Cliente</th><th>Alojamiento</th><th>Ciudad</th><th>Fechas</th><th>Valor</th><th>Estado</th></tr>
+                <tr><th>Cliente</th><th>Alojamiento</th><th>Propietario</th><th>Ciudad</th><th>Fechas</th><th>Valor</th><th>Estado</th><th>Pago / Giro</th></tr>
             </thead>
             <tbody>
                 <tr th:each="r : ${reservas}">
@@ -39,10 +39,15 @@
                            th:text="${r.cliente.usuario.nombre} + ' ' + ${r.cliente.usuario.apellido}"></a>
                     </td>
                     <td><a th:href="@{/inmuebles/{id}(id=${r.inmueble.id})}" th:text="${r.inmueble.titulo}"></a></td>
+                    <td>
+                        <a th:href="@{/propietarios/{id}(id=${r.inmueble.propietario.id})}"
+                           th:text="${r.inmueble.propietario.usuario.nombre} + ' ' + ${r.inmueble.propietario.usuario.apellido}"></a>
+                    </td>
                     <td th:text="${r.inmueble.ubicacion.ciudad}"></td>
                     <td th:text="${r.fechaInicio} + ' a ' + ${r.fechaFin}"></td>
                     <td th:text="'$' + ${#numbers.formatInteger(r.valorTotal, 0, 'POINT')}"></td>
                     <td th:text="${r.estado}"></td>
+                    <td th:text="${estadoPagoPorReserva.get(r.id)}"></td>
                 </tr>
             </tbody>
         </table>

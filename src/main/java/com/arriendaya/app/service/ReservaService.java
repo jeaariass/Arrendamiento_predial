@@ -1,5 +1,6 @@
 package com.arriendaya.app.service;
 
+import com.arriendaya.app.dto.RangoFecha;
 import com.arriendaya.app.model.Cliente;
 import com.arriendaya.app.model.EstadoReserva;
 import com.arriendaya.app.model.Inmueble;
@@ -109,6 +110,13 @@ public class ReservaService {
     /** Si un inmueble tiene al menos una reserva (de cualquier estado); bloquea su eliminacion. */
     public boolean existeReservaDe(Long inmuebleId) {
         return reservaRepository.existsByInmuebleId(inmuebleId);
+    }
+
+    /** Rangos de fechas ya CONFIRMADOS (pagados) a futuro, para que el selector de fechas no los ofrezca. */
+    public List<RangoFecha> fechasOcupadasConfirmadas(Long inmuebleId) {
+        return reservaRepository.confirmadasFuturasPorInmueble(inmuebleId, LocalDate.now()).stream()
+                .map(r -> new RangoFecha(r.getFechaInicio(), r.getFechaFin()))
+                .toList();
     }
 
     /** Todas las reservas para el admin, opcionalmente filtradas por estado (null = todas). */

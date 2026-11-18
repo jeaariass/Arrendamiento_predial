@@ -79,7 +79,7 @@
             <div class="tabla-admin-wrap" th:if="${not #lists.isEmpty(historialReservas)}">
             <table class="tabla-admin">
                 <thead>
-                    <tr><th>Alojamiento</th><th>Reservado por</th><th>Fechas</th><th>Valor</th><th>Estado</th></tr>
+                    <tr><th>Alojamiento</th><th>Reservado por</th><th>Fechas</th><th>Valor</th><th>Estado</th><th>Pago de la plataforma</th></tr>
                 </thead>
                 <tbody>
                     <tr th:each="r : ${historialReservas}">
@@ -88,6 +88,7 @@
                         <td th:text="${r.fechaInicio} + ' a ' + ${r.fechaFin}"></td>
                         <td th:text="'$' + ${#numbers.formatInteger(r.valorTotal, 0, 'POINT')}"></td>
                         <td th:text="${r.estado}"></td>
+                        <td th:text="${estadoPagoPorReserva.get(r.id)}"></td>
                     </tr>
                 </tbody>
             </table>

@@ -19,7 +19,7 @@
             &nbsp;|&nbsp;
             <a href="/admin/reservas">Ver reservas &rarr;</a>
         </p>
-        <p class="ayuda" th:text="${totalInmuebles} + ' alojamientos en total. Ocupado = tiene una reserva pendiente o confirmada que cubre hoy.'"></p>
+        <p class="ayuda" th:text="${totalInmuebles} + ' alojamientos en total. Ocupado = tiene una reserva CONFIRMADA (ya pagada) que cubre hoy. Una pendiente de pago no bloquea el cupo.'"></p>
 
         <div class="exito-mensaje" th:if="${mensaje}" th:text="${mensaje}"></div>
         <div class="error-mensaje" th:if="${error}" th:text="${error}"></div>
@@ -75,11 +75,11 @@
             <button type="submit">Reorganizar reservas (-90 / +90 dias)</button>
         </form>
 
-        <form class="panel-filtro" method="get" action="/admin" style="margin-bottom: 20px; display:flex; gap:10px; align-items:center;">
+        <form class="panel-filtro" method="get" action="/admin" style="margin-bottom: 20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
             <label for="filtroCiudad" style="font-size: 13px; font-weight: 700;">Ciudad:</label>
             <select id="filtroCiudad" name="ciudad" onchange="this.form.submit()">
                 <option value="" th:selected="${ciudad == null or ciudad == ''}">Todas</option>
-                <option th:each="c : ${ciudadesTop}" th:value="${c}" th:text="${c}" th:selected="${c == ciudad}"></option>
+                <option th:each="c : ${ciudades}" th:value="${c}" th:text="${c}" th:selected="${c == ciudad}"></option>
             </select>
             <label for="filtroEstado" style="font-size: 13px; font-weight: 700;">Estado:</label>
             <select id="filtroEstado" name="estado" onchange="this.form.submit()">
@@ -87,6 +87,9 @@
                 <option value="LIBRE" th:selected="${estado == 'LIBRE'}">Libres</option>
                 <option value="OCUPADO" th:selected="${estado == 'OCUPADO'}">Ocupados</option>
             </select>
+            <label for="filtroTexto" style="font-size: 13px; font-weight: 700;">Buscar:</label>
+            <input type="text" id="filtroTexto" name="q" th:value="${q}" placeholder="Alojamiento o propietario">
+            <button type="submit">Buscar</button>
         </form>
 
         <div class="tabla-admin-wrap">
@@ -97,8 +100,11 @@
                     <th>Ciudad</th>
                     <th>Propietario</th>
                     <th>Estado</th>
+                    <th>Cliente actual</th>
                     <th>Fechas ocupadas (90 dias)</th>
                     <th>Fechas libres (90 dias)</th>
+                    <th>Ganancia generada</th>
+                    <th>Giro al propietario</th>
                     <th>Asignar</th>
                 </tr>
             </thead>
@@ -116,6 +122,7 @@
                         <span th:if="${f.ocupadoHoy}" class="badge-ocupado">Ocupado</span>
                         <span th:unless="${f.ocupadoHoy}" class="badge-libre">Libre</span>
                     </td>
+                    <td th:text="${f.clienteActual} ?: '&mdash;'"></td>
                     <td>
                         <span th:if="${#lists.isEmpty(f.ocupados)}">&mdash;</span>
                         <div th:each="r : ${f.ocupados}" th:text="${r.inicio} + ' a ' + ${r.fin}"></div>
@@ -123,6 +130,16 @@
                     <td>
                         <span th:if="${#lists.isEmpty(f.libres)}">&mdash;</span>
                         <div th:each="r : ${f.libres}" th:text="${r.inicio} + ' a ' + ${r.fin}"></div>
+                    </td>
+                    <td th:text="'$' + ${#numbers.formatInteger(f.ganancia, 0, 'POINT')}"></td>
+                    <td>
+                        <form th:if="${f.montoPendienteGiro.signum() > 0}" method="post" action="/admin/girar"
+                              onsubmit="return confirm('Girar $' + this.dataset.monto + ' al propietario?');"
+                              th:data-monto="${#numbers.formatInteger(f.montoPendienteGiro, 0, 'POINT')}">
+                            <input type="hidden" name="inmuebleId" th:value="${f.inmueble.id}">
+                            <button type="submit" th:text="'Pagar $' + ${#numbers.formatInteger(f.montoPendienteGiro, 0, 'POINT')}"></button>
+                        </form>
+                        <span th:if="${f.montoPendienteGiro.signum() == 0}" class="badge-libre">Al dia</span>
                     </td>
                     <td>
                         <details th:unless="${f.ocupadoHoy}">
@@ -144,22 +161,23 @@
         </div>
 
         <div class="paginacion" th:if="${totalPaginas > 1}" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-            <a th:if="${pagina > 0}" th:href="@{/admin(ciudad=${ciudad}, estado=${estado}, pagina=${pagina - 1})}" class="pagina-link">&laquo; Anterior</a>
+            <a th:if="${pagina > 0}" th:href="@{/admin(ciudad=${ciudad}, estado=${estado}, q=${q}, pagina=${pagina - 1})}" class="pagina-link">&laquo; Anterior</a>
             <span th:unless="${pagina > 0}" class="pagina-link" style="opacity:0.4;">&laquo; Anterior</span>
 
             <a th:each="p : ${#numbers.sequence(paginaDesde, paginaHasta)}"
-               th:href="@{/admin(ciudad=${ciudad}, estado=${estado}, pagina=${p})}"
+               th:href="@{/admin(ciudad=${ciudad}, estado=${estado}, q=${q}, pagina=${p})}"
                th:text="${p + 1}"
                th:classappend="${p == pagina} ? ' activa' : ''"
                class="pagina-link"></a>
 
-            <a th:if="${pagina < totalPaginas - 1}" th:href="@{/admin(ciudad=${ciudad}, estado=${estado}, pagina=${pagina + 1})}" class="pagina-link">Siguiente &raquo;</a>
+            <a th:if="${pagina < totalPaginas - 1}" th:href="@{/admin(ciudad=${ciudad}, estado=${estado}, q=${q}, pagina=${pagina + 1})}" class="pagina-link">Siguiente &raquo;</a>
             <span th:unless="${pagina < totalPaginas - 1}" class="pagina-link" style="opacity:0.4;">Siguiente &raquo;</span>
 
             <form method="get" action="/admin" style="display:flex; gap:6px; align-items:center; margin-left:12px;"
                   th:onsubmit="'document.getElementById(\'irAPagina\').value = Math.max(1, Math.min(this.paginaVisible.value, ' + ${totalPaginas} + ')) - 1; return true;'">
                 <input type="hidden" name="ciudad" th:value="${ciudad}">
                 <input type="hidden" name="estado" th:value="${estado}">
+                <input type="hidden" name="q" th:value="${q}">
                 <input type="hidden" id="irAPagina" name="pagina" value="0">
                 <input type="number" name="paginaVisible" min="1" th:max="${totalPaginas}" placeholder="pagina"
                        style="width:70px;">

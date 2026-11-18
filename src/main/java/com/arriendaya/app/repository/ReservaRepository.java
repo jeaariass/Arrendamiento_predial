@@ -32,10 +32,23 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
         """)
     List<Reserva> futurasPorInmueble(@Param("inmuebleId") Long inmuebleId, @Param("hoy") LocalDate hoy);
 
+    /**
+     * Solo las reservas CONFIRMADAS (ya pagadas) bloquean fechas de verdad.
+     * Una PENDIENTE sin pagar no le quita el cupo a otro cliente.
+     */
+    @Query("""
+        select r from Reserva r
+        where r.inmueble.id = :inmuebleId
+          and r.estado = 'CONFIRMADA'
+          and r.fechaFin >= :hoy
+        order by r.fechaInicio asc
+        """)
+    List<Reserva> confirmadasFuturasPorInmueble(@Param("inmuebleId") Long inmuebleId, @Param("hoy") LocalDate hoy);
+
     @Query("""
         select count(r) > 0 from Reserva r
         where r.inmueble.id = :inmuebleId
-          and r.estado in ('PENDIENTE', 'CONFIRMADA')
+          and r.estado = 'CONFIRMADA'
           and r.fechaInicio <= :fechaFin and r.fechaFin >= :fechaInicio
         """)
     boolean existeSolapada(@Param("inmuebleId") Long inmuebleId,
